@@ -3,7 +3,6 @@ package lexer
 import (
 	"errors"
 
-	"github.com/jeremitraverse/golb/line"
 	"github.com/jeremitraverse/golb/token"
 )
 
@@ -21,8 +20,7 @@ func New(input string) *Lexer {
 	return l
 }
 
-// Premier lieu trouver le line type
-// Trouver les tokens
+/*
 func (l *Lexer) GetLine() {
 	var li line.Line
 	switch l.currentChar {
@@ -34,6 +32,7 @@ func (l *Lexer) GetLine() {
 	}
 
 }
+*/
 
 func (l *Lexer) GetToken() token.Token {
 	var tok token.Token
@@ -70,15 +69,6 @@ func (l *Lexer) GetToken() token.Token {
 	l.readChar()
 	return tok
 }
-
-func (l *Lexer) getTitleRow() (string, error) {
-	var initialPos = l.currentPos
-
-	for l.currentChar == '#' {
-		l.readChar()
-	}
-}
-
 
 // Advancing both char pointers
 func (l *Lexer) readChar() {
@@ -225,18 +215,5 @@ func (l *Lexer) handleImage() token.Token {
 	tok.Type = token.TEXT
 	tok.Literal = l.input[initialPos:l.currentPos]
 
-	return tok
-}
-
-// Check for delimiters *, _
-//
-//	if found, return the delimiter token
-//
-// Check for link (text)[link_url]
-//
-//	if found, return link token
-func (l *Lexer) consumeText() token.Token {
-	var tok token.Token
-	for 
 	return tok
 }
