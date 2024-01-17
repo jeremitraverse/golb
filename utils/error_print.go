@@ -1,0 +1,8 @@
+package utils
+
+import "fmt"
+
+func Print_Error(error_message string) {
+	fmt.Println("golb: ", error_message)
+	fmt.Println("Try 'golb --help' for more information.")
+}
