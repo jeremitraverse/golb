@@ -1,6 +1,6 @@
 package line
 
-import "go/token"
+import "github.com/jeremitraverse/golb/token"
 
 type LineType string
 

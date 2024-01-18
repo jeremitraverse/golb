@@ -3,6 +3,7 @@ package lexer
 import (
 	"errors"
 
+	"github.com/jeremitraverse/golb/line"
 	"github.com/jeremitraverse/golb/token"
 )
 
@@ -20,19 +21,63 @@ func New(input string) *Lexer {
 	return l
 }
 
-/*
-func (l *Lexer) GetLine() {
-	var li line.Line
+func (l *Lexer) GetLine() line.Line {
 	switch l.currentChar {
+	// When the first character of a line is a '#' it can either be a title line
+	// or a text line
 	case '#':
-		newToken, err := l.getTitleToken()
+		li, err := l.getTitleLineType()
 		if err != nil {
-			panic(err)
+			li.Type = line.TEXT
+			li.Tokens = l.getLineTokens()
+		}
+		if li.Type == line.TEXT {
+
 		}
 	}
-
+	var li line.Line
+	return li
 }
-*/
+
+func (l *Lexer) getTitleLineType() (line.Line, error) {
+	initialPos := l.currentPos
+	var li line.Line
+
+	for l.currentChar == '#' {
+		l.readChar()
+	}
+
+	titleLit := l.input[initialPos:l.currentPos]
+
+	if l.peekChar() != ' ' || len(titleLit) > 4 {
+		l.reset(initialPos)
+		return li, errors.New("Line isn't a title")
+	}
+
+	switch titleLit {
+	case "#":
+		li.Type = line.FIRST_TITLE
+	case "##":
+		li.Type = line.SECOND_TITLE
+	case "###":
+		li.Type = line.THIRD_TITLE
+	case "####":
+		li.Type = line.FOURTH_TITLE
+	}
+
+	// consuming the ' ' after the title's '#'
+	l.readChar()
+	return li, nil
+}
+
+func (l *Lexer) getLineTokens() []token.Token {
+	var tokens []token.Token
+	for l.GetToken().Type != token.EOL {
+
+	}
+
+	return tokens
+}
 
 func (l *Lexer) GetToken() token.Token {
 	var tok token.Token
@@ -216,4 +261,10 @@ func (l *Lexer) handleImage() token.Token {
 	tok.Literal = l.input[initialPos:l.currentPos]
 
 	return tok
+}
+
+func (l *Lexer) reset(position int) {
+	l.currentChar = l.input[position]
+	l.currentPos = position
+	l.nextPos = position + 1
 }
