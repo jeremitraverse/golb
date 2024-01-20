@@ -1,11 +1,44 @@
 package lexer
 
 import (
+	"fmt"
 	"testing"
 
+	"github.com/jeremitraverse/golb/line"
 	"github.com/jeremitraverse/golb/token"
 )
 
+func TestTitles(t *testing.T) {
+	input := `# First Title **bold**
+## Second _Title_`
+	
+	testCases := []struct {
+		expectedLineType line.LineType
+		expectedTokens []token.Token
+	}{
+		{
+			line.FIRST_TITLE, []token.Token {
+				{ Type: token.TEXT, Literal: "First Title" },
+				{ Type: token.BOLD, Literal: "bold" },
+			},
+
+		},
+	}
+
+	l := New(input)
+
+	for i, tc := range testCases {
+		line := l.GetLine()
+
+		fmt.Println(line)
+
+		if line.Type != tc.expectedLineType {
+			t.Fatalf("Test Case #%d - line type is wrong. expected %q, got %q",
+				i, tc.expectedLineType, line.Type)
+		}
+	}
+}
+/*
 func TestTitles(t *testing.T) {
 	input := `# First Title
 ## Second Title
@@ -115,4 +148,4 @@ func TestImages(t *testing.T) {
 				i+1, tc.expectedType, tok.Type)
 		}
 	}
-}
+}*/

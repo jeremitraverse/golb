@@ -2,6 +2,7 @@ package lexer
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/jeremitraverse/golb/line"
 	"github.com/jeremitraverse/golb/token"
@@ -22,20 +23,22 @@ func New(input string) *Lexer {
 }
 
 func (l *Lexer) GetLine() line.Line {
+	var li line.Line
 	switch l.currentChar {
 	// When the first character of a line is a '#' it can either be a title line
 	// or a text line
 	case '#':
 		li, err := l.getTitleLineType()
 		if err != nil {
+			fmt.Println(err)
 			li.Type = line.TEXT
 			li.Tokens = l.getLineTokens()
 		}
-		if li.Type == line.TEXT {
 
-		}
+		li.Tokens = l.getLineTokens()
+		return li
 	}
-	var li line.Line
+
 	return li
 }
 
@@ -49,20 +52,20 @@ func (l *Lexer) getTitleLineType() (line.Line, error) {
 
 	titleLit := l.input[initialPos:l.currentPos]
 
-	if l.peekChar() != ' ' || len(titleLit) > 4 {
+	if l.currentChar != ' ' || len(titleLit) > 4 {
 		l.reset(initialPos)
 		return li, errors.New("Line isn't a title")
 	}
-
+	
 	switch titleLit {
-	case "#":
-		li.Type = line.FIRST_TITLE
-	case "##":
-		li.Type = line.SECOND_TITLE
-	case "###":
-		li.Type = line.THIRD_TITLE
-	case "####":
-		li.Type = line.FOURTH_TITLE
+		case "#":
+			li.Type = line.FIRST_TITLE
+		case "##":
+			li.Type = line.SECOND_TITLE
+		case "###":
+			li.Type = line.THIRD_TITLE
+		case "####":
+			li.Type = line.FOURTH_TITLE
 	}
 
 	// consuming the ' ' after the title's '#'
@@ -72,23 +75,20 @@ func (l *Lexer) getTitleLineType() (line.Line, error) {
 
 func (l *Lexer) getLineTokens() []token.Token {
 	var tokens []token.Token
-	for l.GetToken().Type != token.EOL {
 
+	currentToken := l.GetToken()
+	for currentToken.Type != token.EOF {
+		tokens = append(tokens, currentToken)
+		currentToken = l.GetToken()
 	}
 
 	return tokens
 }
 
+/*
 func (l *Lexer) GetToken() token.Token {
 	var tok token.Token
 	switch l.currentChar {
-	case '#':
-		newToken, err := l.getTitleToken()
-		if err != nil {
-			panic(err)
-		}
-
-		return newToken
 	case '*':
 		return l.handleTextModifier('*')
 	case '_':
@@ -113,6 +113,35 @@ func (l *Lexer) GetToken() token.Token {
 
 	l.readChar()
 	return tok
+}
+*/
+
+func (l *Lexer) GetToken() token.Token {
+	var tok token.Token
+
+	switch l.currentChar {
+		case 10:
+			tok.Type = token.EOL
+			tok.Literal = ""
+			return tok
+		case 13:
+			tok.Type = token.EOL
+			tok.Literal = ""
+			return tok
+	}
+		
+	for l.currentChar != 10 || l.currentChar != 13 {
+		switch l.currentChar {
+			case '*':
+				t, err := l.isModifiedText()
+		}
+	}
+}
+
+func (l *Lexer) isModifiedText() (token.Token, error) {
+	var tok token.token
+
+	return tok, nil
 }
 
 // Advancing both char pointers
@@ -201,12 +230,26 @@ func (l *Lexer) isContentDelimiter() bool {
 	return isReturnLine(l.currentChar) || l.isEndOfFile()
 }
 
+
+// **BOLD** { Type: BOLD, Value: "BOLD" }
+// *ITALIC* { Type: ITALIC, Value: "ITALIC" }
+// **ITALIC* { Type: ITALIC, Value: "ITALIC" }
 func (l *Lexer) handleTextModifier(mod byte) token.Token {
 	var tok token.Token
+	
 	textStartingPos := l.currentPos
+	
+	if l.peekChar() == mod {
+		tok.Type = token.BOLD
+	} else {
+		tok.Type = token.ITALIC
+	}
+		
+	for !isReturnLine(l.currentChar) && !l.isEndOfFile() {
+		if l.currentChar 
+	}
 
-	l.readChar()
-
+  /*
 	if l.currentChar == mod {
 		// There's 2 char to skip
 		textStartingPos += 2
@@ -236,7 +279,7 @@ func (l *Lexer) handleTextModifier(mod byte) token.Token {
 
 		l.readChar()
 	}
-
+	*/
 	return tok
 }
 
