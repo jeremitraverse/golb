@@ -28,21 +28,22 @@ func (l *Lexer) GetLine() line.Line {
 	// When the first character of a line is a '#' it can either be a title line
 	// or a text line
 	case '#':
-		li, err := l.getTitleLineType()
+		li, err := l.getTitleLine()
+
 		if err != nil {
-			fmt.Println(err)
 			li.Type = line.TEXT
 			li.Tokens = l.getLineTokens()
 		}
 
 		li.Tokens = l.getLineTokens()
+		fmt.Println("Completed Line :", li)
 		return li
 	}
 
 	return li
 }
 
-func (l *Lexer) getTitleLineType() (line.Line, error) {
+func (l *Lexer) getTitleLine() (line.Line, error) {
 	initialPos := l.currentPos
 	var li line.Line
 
@@ -77,71 +78,37 @@ func (l *Lexer) getLineTokens() []token.Token {
 	var tokens []token.Token
 
 	currentToken := l.GetToken()
-	for currentToken.Type != token.EOF {
+
+	for currentToken.Type != token.EOF && currentToken.Type != token.EOL {
 		tokens = append(tokens, currentToken)
 		currentToken = l.GetToken()
 	}
-
+	
 	return tokens
 }
 
-/*
 func (l *Lexer) GetToken() token.Token {
 	var tok token.Token
 	switch l.currentChar {
-	case '*':
-		return l.handleTextModifier('*')
-	case '_':
-		return l.handleTextModifier('_')
-	case '<':
-		return l.handleImage()
-	case 0:
-		tok.Type = token.EOF
-		tok.Literal = ""
-	case 10:
-		tok.Type = token.EOL
-		tok.Literal = ""
-	case 13:
-		tok.Type = token.EOL
-		tok.Literal = ""
-	default:
-		if isText(l.currentChar) {
-			tok.Type = token.TEXT
-			tok.Literal = l.readText()
-		}
-	}
-
-	l.readChar()
-	return tok
-}
-*/
-
-func (l *Lexer) GetToken() token.Token {
-	var tok token.Token
-
-	switch l.currentChar {
+		case 0:
+			tok.Type = token.EOF
+			tok.Literal = ""
+			return tok
 		case 10:
 			tok.Type = token.EOL
 			tok.Literal = ""
+			l.readChar() // Reading char to skip to next line
 			return tok
 		case 13:
 			tok.Type = token.EOL
 			tok.Literal = ""
+			l.readChar() // Reading char to skip to next line
 			return tok
+		case '*':
+			return l.getModifiedTextToken('*')
+		default:
+			return l.getTextToken()	
 	}
-		
-	for l.currentChar != 10 || l.currentChar != 13 {
-		switch l.currentChar {
-			case '*':
-				t, err := l.isModifiedText()
-		}
-	}
-}
-
-func (l *Lexer) isModifiedText() (token.Token, error) {
-	var tok token.token
-
-	return tok, nil
 }
 
 // Advancing both char pointers
@@ -164,40 +131,6 @@ func (l *Lexer) peekChar() byte {
 	return l.input[l.nextPos]
 }
 
-func (l *Lexer) getTitleToken() (token.Token, error) {
-	var tok token.Token
-	var initialPos = l.currentPos
-
-	for l.currentChar == '#' {
-		l.readChar()
-	}
-
-	title := l.input[initialPos:l.currentPos]
-	tok.Literal = title
-
-	switch title {
-	case "#":
-		tok.Type = token.FIRST_TITLE
-	case "##":
-		tok.Type = token.SECOND_TITLE
-	case "###":
-		tok.Type = token.THIRD_TITLE
-	case "####":
-		tok.Type = token.FOURTH_TITLE
-	default:
-		return tok, errors.New("Title type not found")
-	}
-
-	// Consume the space between the title type and the title text
-	l.readChar()
-
-	return tok, nil
-}
-
-func isText(b byte) bool {
-	return b != '_' && b != '*' && b != 0
-}
-
 // Not an extension of lexer since we want to be able to check the peek char
 func isReturnLine(b byte) bool {
 	return b == 10 || b == 13
@@ -208,79 +141,70 @@ func (l *Lexer) isEndOfFile() bool {
 }
 
 func (l *Lexer) isBold(mod byte) bool {
-	return l.peekChar() == mod
-}
-
-func (l *Lexer) readText() string {
-	initialPosition := l.currentPos
-	for isText(l.currentChar) && !isReturnLine(l.peekChar()) {
-		l.readChar()
-	}
-
-	endPos := l.currentPos
-
-	if isReturnLine(l.peekChar()) {
-		endPos++
-	}
-
-	return l.input[initialPosition:endPos]
+	return l.peekChar() == mod && l.currentChar == mod
 }
 
 func (l *Lexer) isContentDelimiter() bool {
 	return isReturnLine(l.currentChar) || l.isEndOfFile()
 }
 
-
-// **BOLD** { Type: BOLD, Value: "BOLD" }
-// *ITALIC* { Type: ITALIC, Value: "ITALIC" }
-// **ITALIC* { Type: ITALIC, Value: "ITALIC" }
-func (l *Lexer) handleTextModifier(mod byte) token.Token {
+func (l *Lexer) getModifiedTextToken(mod byte) token.Token {
 	var tok token.Token
-	
-	textStartingPos := l.currentPos
-	
+
 	if l.peekChar() == mod {
 		tok.Type = token.BOLD
-	} else {
-		tok.Type = token.ITALIC
-	}
-		
-	for !isReturnLine(l.currentChar) && !l.isEndOfFile() {
-		if l.currentChar 
-	}
-
-  /*
-	if l.currentChar == mod {
-		// There's 2 char to skip
-		textStartingPos += 2
-		tok.Type = token.BOLD
+		l.readChar()
 		l.readChar()
 	} else {
-		// There's 1 char to skip
-		textStartingPos += 1
 		tok.Type = token.ITALIC
+		l.readChar()
 	}
+	
+	textStartingPos := l.currentPos
 
-	for !isReturnLine(l.currentChar) && !l.isEndOfFile() {
+	for !l.isContentDelimiter() {
 		if l.currentChar == mod {
-			if l.isBold(mod) {
-				tok.Literal = l.input[textStartingPos:l.currentPos]
-				// Consume the two next char
+			if l.peekChar() == mod  && tok.Type == token.BOLD {
+				tok.Literal = l.input[textStartingPos: l.currentPos]
+				// Consuming the two mod char
 				l.readChar()
 				l.readChar()
 				return tok
 			}
 
-			tok.Literal = l.input[textStartingPos:l.currentPos]
-			// Consume the next char
-			l.readChar()
+			if l.peekChar() != mod && tok.Type == token.BOLD {
+				tok.Type = token.ITALIC
+				tok.Literal = l.input[textStartingPos-1: l.currentPos]
+				// Consuming the mod char
+				l.readChar()
+				return tok
+			}
+
+			tok.Literal = l.input[textStartingPos: l.currentPos]
 			return tok
 		}
 
 		l.readChar()
 	}
-	*/
+
+	tok.Type = token.TEXT
+	tok.Literal = l.input[textStartingPos-1: l.currentPos]
+
 	return tok
+}
+
+func (l *Lexer) getTextToken() token.Token {
+	initialPos := l.currentPos
+
+	for isCharText(l.currentChar) {
+		l.readChar()
+	}
+
+	return token.Token{ Type: token.TEXT, Literal: l.input[initialPos:l.currentPos] }
+}
+
+func isCharText(char byte) bool {
+	return char != '*' && char != '_' && !isReturnLine(char) && char != 0
 }
 
 func (l *Lexer) handleImage() token.Token {

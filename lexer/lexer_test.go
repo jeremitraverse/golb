@@ -9,8 +9,61 @@ import (
 )
 
 func TestTitles(t *testing.T) {
-	input := `# First Title **bold**
-## Second _Title_`
+	input := `# First Title
+## Second Title`
+	
+	testCases := []struct {
+		expectedLineType line.LineType
+		expectedTokens []token.Token
+	}{
+		{
+			line.FIRST_TITLE, []token.Token {
+				{ Type: token.TEXT, Literal: "First Title" },
+	 		},
+		},
+		{
+			line.SECOND_TITLE, []token.Token {
+				{ Type: token.TEXT, Literal: "Second Title" },
+	 		},
+		},
+	}
+
+	l := New(input)
+
+	for i, tc := range testCases {
+		line := l.GetLine()
+
+		fmt.Println(line)
+
+		if line.Type != tc.expectedLineType {
+			t.Fatalf("Test Case #%d - line type is wrong. expected %q, got %q",
+				i+1, tc.expectedLineType, line.Type)
+		}
+
+		if len(line.Tokens) != len(tc.expectedTokens) {
+			t.Fatalf("Test Case #%d - Tokens array are not the same size. expected %d, got %d",
+				i+1, len(tc.expectedTokens), len(line.Tokens))
+		}
+
+		for j, tok := range line.Tokens {
+			expectedToken := tc.expectedTokens[j] 
+
+			if tok.Type != expectedToken.Type {
+				t.Fatalf("Error at token #%d - Token type doesn't match. expected %q, got %q",
+					j+1, tok.Type, expectedToken.Type)
+			}
+
+			if tok.Literal != expectedToken.Literal {
+				t.Fatalf("Error at token #%d - Literal doesn't match. expected %q, got %q",
+					j+1, tok.Literal, expectedToken.Literal)
+			}
+		}
+
+	}
+}
+
+func TestTestModifier(t *testing.T) {
+	input := `# First Title **bold** **Italic* *Italic*`
 	
 	testCases := []struct {
 		expectedLineType line.LineType
@@ -20,7 +73,9 @@ func TestTitles(t *testing.T) {
 			line.FIRST_TITLE, []token.Token {
 				{ Type: token.TEXT, Literal: "First Title" },
 				{ Type: token.BOLD, Literal: "bold" },
-			},
+				{ Type: token.ITALIC, Literal: "*Italic" },
+				{ Type: token.ITALIC, Literal: "Italic" },
+	 		},
 
 		},
 	}
