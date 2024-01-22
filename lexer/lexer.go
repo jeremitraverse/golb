@@ -2,7 +2,6 @@ package lexer
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/jeremitraverse/golb/line"
 	"github.com/jeremitraverse/golb/token"
@@ -36,8 +35,9 @@ func (l *Lexer) GetLine() line.Line {
 		}
 
 		li.Tokens = l.getLineTokens()
-		fmt.Println("Completed Line :", li)
 		return li
+	case '<':
+		
 	}
 
 	return li
@@ -72,6 +72,13 @@ func (l *Lexer) getTitleLine() (line.Line, error) {
 	// consuming the ' ' after the title's '#'
 	l.readChar()
 	return li, nil
+}
+
+func (l *Lexer) getImageLine() line.Line {
+	li := line.Line { 
+		Type: line.IMAGE }
+
+	return li
 }
 
 func (l *Lexer) getLineTokens() []token.Token {
@@ -159,7 +166,7 @@ func (l *Lexer) getModifiedTextToken(mod byte) token.Token {
 		tok.Type = token.ITALIC
 		l.readChar()
 	}
-	
+
 	textStartingPos := l.currentPos
 
 	for !l.isContentDelimiter() {
@@ -181,6 +188,8 @@ func (l *Lexer) getModifiedTextToken(mod byte) token.Token {
 			}
 
 			tok.Literal = l.input[textStartingPos: l.currentPos]
+			// Consuming the mod char
+			l.readChar()
 			return tok
 		}
 
@@ -223,9 +232,8 @@ func (l *Lexer) handleImage() token.Token {
 
 		l.readChar()
 	}
-
-	tok.Type = token.TEXT
-	tok.Literal = l.input[initialPos:l.currentPos]
+	
+	l.reset(initialPos)
 
 	return tok
 }

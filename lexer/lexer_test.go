@@ -1,7 +1,6 @@
 package lexer
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/jeremitraverse/golb/line"
@@ -10,7 +9,9 @@ import (
 
 func TestTitles(t *testing.T) {
 	input := `# First Title
-## Second Title`
+## Second Title
+### Third Title
+#### Fourth Title`
 	
 	testCases := []struct {
 		expectedLineType line.LineType
@@ -26,14 +27,22 @@ func TestTitles(t *testing.T) {
 				{ Type: token.TEXT, Literal: "Second Title" },
 	 		},
 		},
+		{
+			line.THIRD_TITLE, []token.Token {
+				{ Type: token.TEXT, Literal: "Third Title" },
+	 		},
+		},
+		{
+			line.FOURTH_TITLE, []token.Token {
+				{ Type: token.TEXT, Literal: "Fourth Title" },
+	 		},
+		},
 	}
 
 	l := New(input)
 
 	for i, tc := range testCases {
 		line := l.GetLine()
-
-		fmt.Println(line)
 
 		if line.Type != tc.expectedLineType {
 			t.Fatalf("Test Case #%d - line type is wrong. expected %q, got %q",
@@ -58,7 +67,6 @@ func TestTitles(t *testing.T) {
 					j+1, tok.Literal, expectedToken.Literal)
 			}
 		}
-
 	}
 }
 
@@ -71,9 +79,11 @@ func TestTestModifier(t *testing.T) {
 	}{
 		{
 			line.FIRST_TITLE, []token.Token {
-				{ Type: token.TEXT, Literal: "First Title" },
+				{ Type: token.TEXT, Literal: "First Title " },
 				{ Type: token.BOLD, Literal: "bold" },
+				{ Type: token.TEXT, Literal: " " },
 				{ Type: token.ITALIC, Literal: "*Italic" },
+				{ Type: token.TEXT, Literal: " " },
 				{ Type: token.ITALIC, Literal: "Italic" },
 	 		},
 
@@ -85,14 +95,43 @@ func TestTestModifier(t *testing.T) {
 	for i, tc := range testCases {
 		line := l.GetLine()
 
-		fmt.Println(line)
-
 		if line.Type != tc.expectedLineType {
 			t.Fatalf("Test Case #%d - line type is wrong. expected %q, got %q",
 				i, tc.expectedLineType, line.Type)
 		}
+
+		for j, tok := range line.Tokens {
+			expectedToken := tc.expectedTokens[j] 
+
+			if tok.Literal != expectedToken.Literal {
+				t.Fatalf("Error at token #%d - Literal doesn't match. expected %q, got %q",
+					j+1, expectedToken.Literal, tok.Literal)
+			}
+
+			if tok.Type != expectedToken.Type {
+				t.Fatalf("Error at token #%d - Token type doesn't match. expected %q, got %q",
+					j+1, expectedToken.Type, tok.Type)
+			}
+
+		}
 	}
 }
+
+func TestImage(t *testing.T) {
+	input := `<image url>`
+
+	testCases := []struct {
+		expectedLineType line.LineType
+		expectedTokens []token.Token
+	}{
+		{
+			line.IMAGE, []token.Token {
+				{ Type: token.IMAGE, Literal: "image url" },
+	 		},
+		},
+	}
+}
+
 /*
 func TestTitles(t *testing.T) {
 	input := `# First Title
