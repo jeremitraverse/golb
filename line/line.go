@@ -15,7 +15,7 @@ const (
 	THIRD_TITLE  = "###"
 	FOURTH_TITLE = "####"
 
-	TEXT = ""
+	TEXT = "TEXT"
 
 	IMAGE = "IMAGE"
 )

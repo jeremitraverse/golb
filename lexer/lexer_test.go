@@ -70,8 +70,9 @@ func TestTitles(t *testing.T) {
 	}
 }
 
-func TestTestModifier(t *testing.T) {
-	input := `# First Title **bold** **Italic* *Italic*`
+func TestModifiers(t *testing.T) {
+	input := `# First Title Text **Bold** **Italic* *Italic* _Italic_ __Bold__
+__bold__`
 	
 	testCases := []struct {
 		expectedLineType line.LineType
@@ -79,12 +80,16 @@ func TestTestModifier(t *testing.T) {
 	}{
 		{
 			line.FIRST_TITLE, []token.Token {
-				{ Type: token.TEXT, Literal: "First Title " },
-				{ Type: token.BOLD, Literal: "bold" },
+				{ Type: token.TEXT, Literal: "First Title Text " },
+				{ Type: token.BOLD, Literal: "Bold" },
 				{ Type: token.TEXT, Literal: " " },
 				{ Type: token.ITALIC, Literal: "*Italic" },
 				{ Type: token.TEXT, Literal: " " },
 				{ Type: token.ITALIC, Literal: "Italic" },
+				{ Type: token.TEXT, Literal: " " },
+				{ Type: token.ITALIC, Literal: "Italic" },
+				{ Type: token.TEXT, Literal: " " },
+				{ Type: token.BOLD, Literal: "Bold" },
 	 		},
 
 		},
@@ -112,13 +117,13 @@ func TestTestModifier(t *testing.T) {
 				t.Fatalf("Error at token #%d - Token type doesn't match. expected %q, got %q",
 					j+1, expectedToken.Type, tok.Type)
 			}
-
 		}
 	}
 }
 
 func TestImage(t *testing.T) {
-	input := `<image url>`
+	input := `<image url>
+< Text`
 
 	testCases := []struct {
 		expectedLineType line.LineType
@@ -129,117 +134,34 @@ func TestImage(t *testing.T) {
 				{ Type: token.IMAGE, Literal: "image url" },
 	 		},
 		},
-	}
-}
-
-/*
-func TestTitles(t *testing.T) {
-	input := `# First Title
-## Second Title
-### Third Title
-#### Fourth Title`
-
-	testCases := []struct {
-		expectedType    token.TokenType
-		expectedLiteral string
-	}{
-		{token.FIRST_TITLE, "#"},
-		{token.TEXT, "First Title"},
-		{token.EOL, ""},
-		{token.SECOND_TITLE, "##"},
-		{token.TEXT, "Second Title"},
-		{token.EOL, ""},
-		{token.THIRD_TITLE, "###"},
-		{token.TEXT, "Third Title"},
-		{token.EOL, ""},
-		{token.FOURTH_TITLE, "####"},
-		{token.TEXT, "Fourth Title"},
-		{token.EOF, ""},
+		{
+			line.TEXT, []token.Token {
+				{ Type: token.TEXT, Literal: "< Text" },
+	 		},
+		},
 	}
 
-	lexer := New(input)
+	l := New(input)
 	for i, tc := range testCases {
-		token := lexer.GetToken()
-		if token.Literal != tc.expectedLiteral {
-			t.Fatalf("Test Case #%d - literal wrong. expected %q, got %q",
-				i, tc.expectedLiteral, token.Literal)
+		line := l.GetLine()
+
+		if line.Type != tc.expectedLineType {
+			t.Fatalf("Test Case #%d - line type is wrong. expected %q, got %q",
+				i, tc.expectedLineType, line.Type)
 		}
-		if token.Type != tc.expectedType {
-			t.Fatalf("Test Case #%d - token type wrong. expected %q, got %q",
-				i, tc.expectedType, token.Type)
+
+		for j, tok := range line.Tokens {
+			expectedToken := tc.expectedTokens[j] 
+
+			if tok.Literal != expectedToken.Literal {
+				t.Fatalf("Error at token #%d - Literal doesn't match. expected %q, got %q",
+					j+1, expectedToken.Literal, tok.Literal)
+			}
+
+			if tok.Type != expectedToken.Type {
+				t.Fatalf("Error at token #%d - Token type doesn't match. expected %q, got %q",
+					j+1, expectedToken.Type, tok.Type)
+			}
 		}
 	}
 }
-
-func TestTextModifiers(t *testing.T) {
-	input := `**Bold**
-*Italic*
-__Bold__
-_Italic_
-**Bold** And Normal Text
-*Italic* And Normal Text`
-
-	testCases := []struct {
-		expectedType    token.TokenType
-		expectedLiteral string
-	}{
-		{token.BOLD, "Bold"},
-		{token.EOL, ""},
-		{token.ITALIC, "Italic"},
-		{token.EOL, ""},
-		{token.BOLD, "Bold"},
-		{token.EOL, ""},
-		{token.ITALIC, "Italic"},
-		{token.EOL, ""},
-		{token.BOLD, "Bold"},
-		{token.TEXT, " And Normal Text"},
-		{token.EOL, ""},
-		{token.ITALIC, "Italic"},
-		{token.TEXT, " And Normal Text"},
-		{token.EOF, ""},
-	}
-
-	lexer := New(input)
-
-	for i, tc := range testCases {
-		tok := lexer.GetToken()
-		if tok.Literal != tc.expectedLiteral {
-			t.Fatalf("Test Case #%d - literal wrong. expected %q, got %q",
-				i+1, tc.expectedLiteral, tok.Literal)
-		}
-
-		if tok.Type != tc.expectedType {
-			t.Fatalf("Test Case #%d - token type wrong. expected %q, got %q",
-				i+1, tc.expectedType, tok.Type)
-		}
-	}
-}
-
-func TestImages(t *testing.T) {
-	input := `<name of image>
-<simple text`
-
-	testCases := []struct {
-		expectedType    token.TokenType
-		expectedLiteral string
-	}{
-		{token.IMAGE, "name of image"},
-		{token.EOL, ""},
-		{token.TEXT, "<simple text"},
-		{token.EOF, ""},
-	}
-
-	lexer := New(input)
-	for i, tc := range testCases {
-		tok := lexer.GetToken()
-		if tok.Literal != tc.expectedLiteral {
-			t.Fatalf("Test Case #%d - literal wrong. expected %q, got %q",
-				i+1, tc.expectedLiteral, tok.Literal)
-		}
-
-		if tok.Type != tc.expectedType {
-			t.Fatalf("Test Case #%d - token type wrong. expected %q, got %q",
-				i+1, tc.expectedType, tok.Type)
-		}
-	}
-}*/

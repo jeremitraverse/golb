@@ -22,23 +22,34 @@ func New(input string) *Lexer {
 }
 
 func (l *Lexer) GetLine() line.Line {
-	var li line.Line
 	switch l.currentChar {
-	// When the first character of a line is a '#' it can either be a title line
-	// or a text line
 	case '#':
 		li, err := l.getTitleLine()
 
 		if err != nil {
-			li.Type = line.TEXT
-			li.Tokens = l.getLineTokens()
+			return l.getTextLine()
 		}
 
 		li.Tokens = l.getLineTokens()
 		return li
 	case '<':
-		
+		li, err := l.getImageLine()
+
+		if err != nil {
+			return l.getTextLine()
+		}
+
+		return li
+	default:
+		return l.getTextLine()
 	}
+}
+
+func (l *Lexer) getTextLine() line.Line {
+	var li line.Line
+
+	li.Type = line.TEXT
+	li.Tokens = l.getLineTokens()
 
 	return li
 }
@@ -74,11 +85,19 @@ func (l *Lexer) getTitleLine() (line.Line, error) {
 	return li, nil
 }
 
-func (l *Lexer) getImageLine() line.Line {
-	li := line.Line { 
-		Type: line.IMAGE }
+func (l *Lexer) getImageLine() (line.Line, error) {
+	var li line.Line	
+	li.Type = line.IMAGE
 
-	return li
+	token, err := l.getImageToken()
+
+	if err != nil {
+		return li, err	
+	}
+	
+	li.Tokens = append(li.Tokens, token)	
+
+	return li, nil
 }
 
 func (l *Lexer) getLineTokens() []token.Token {
@@ -113,34 +132,11 @@ func (l *Lexer) GetToken() token.Token {
 			return tok
 		case '*':
 			return l.getModifiedTextToken('*')
+		case '_':
+			return l.getModifiedTextToken('_')
 		default:
 			return l.getTextToken()	
 	}
-}
-
-// Advancing both char pointers
-func (l *Lexer) readChar() {
-	if l.nextPos >= len(l.input) {
-		l.currentChar = 0
-	} else {
-		l.currentChar = l.input[l.nextPos]
-	}
-
-	l.currentPos = l.nextPos
-	l.nextPos += 1
-}
-
-func (l *Lexer) peekChar() byte {
-	if l.nextPos >= len(l.input) {
-		return 0
-	}
-
-	return l.input[l.nextPos]
-}
-
-// Not an extension of lexer since we want to be able to check the peek char
-func isReturnLine(b byte) bool {
-	return b == 10 || b == 13
 }
 
 func (l *Lexer) isEndOfFile() bool {
@@ -212,34 +208,57 @@ func (l *Lexer) getTextToken() token.Token {
 	return token.Token{ Type: token.TEXT, Literal: l.input[initialPos:l.currentPos] }
 }
 
-func isCharText(char byte) bool {
-	return char != '*' && char != '_' && !isReturnLine(char) && char != 0
-}
-
-func (l *Lexer) handleImage() token.Token {
-	initialPos := l.currentPos
-	var tok token.Token
-
+func (l *Lexer) getImageToken() (token.Token, error) {
+	var tok token.Token	
+	initPos := l.currentPos
+	
 	for !l.isContentDelimiter() {
 		if l.currentChar == '>' {
 			tok.Type = token.IMAGE
-			tok.Literal = l.input[initialPos+1 : l.currentPos]
-
-			// Consume ']'
-			l.readChar()
-			return tok
+			tok.Literal = l.input[initPos + 1: l.currentPos]
+			l.readChar() // consuming '>' char 
+			l.readChar() // consuming '\n' char 
+			return tok, nil
 		}
 
 		l.readChar()
 	}
-	
-	l.reset(initialPos)
 
-	return tok
+	l.reset(initPos)
+
+	return tok, errors.New("Image line not properly ended.") 
 }
 
 func (l *Lexer) reset(position int) {
 	l.currentChar = l.input[position]
 	l.currentPos = position
 	l.nextPos = position + 1
+}
+
+func isCharText(char byte) bool {
+	return char != '*' && char != '_' && !isReturnLine(char) && char != 0
+}
+
+func (l *Lexer) readChar() {
+	if l.nextPos >= len(l.input) {
+		l.currentChar = 0
+	} else {
+		l.currentChar = l.input[l.nextPos]
+	}
+
+	l.currentPos = l.nextPos
+	l.nextPos += 1
+}
+
+func (l *Lexer) peekChar() byte {
+	if l.nextPos >= len(l.input) {
+		return 0
+	}
+
+	return l.input[l.nextPos]
+}
+
+// Not an extension of lexer since we want to be able to check the peek char
+func isReturnLine(b byte) bool {
+	return b == 10 || b == 13
 }
