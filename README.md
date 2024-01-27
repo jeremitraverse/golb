@@ -38,11 +38,11 @@ golb supports most of the Mardown elements.
 #### Fourth Title
 ```
 
-Images
+**Images**
 ```
 <image file name>
 ```
-Text
+**Text**
 ```
 Regular Text
 
