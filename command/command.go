@@ -4,8 +4,11 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/jeremitraverse/golb/lexer"
+	"github.com/jeremitraverse/golb/line"
+	"github.com/jeremitraverse/golb/parser"
 	"github.com/jeremitraverse/golb/utils"
 )
 
@@ -32,10 +35,6 @@ func Run(args []string) {
 	}
 }
 
-// check if generated folder exists
-// check if posts folder exists
-// convert markdowns to html files
-// append new posts to index.html
 func build() {
 	working_dir, err := os.Getwd()
 	if err != nil {
@@ -84,9 +83,8 @@ func build() {
 		post_path := path.Join(posts_dir_path, file.Name())
 		data, err := os.ReadFile(post_path)
 		check(err)
-		fmt.Println(data)
-		l := lexer.New(string(data))
-		l.GetToken()
+		htmlString := parsePost(string(data))
+		fmt.Println(htmlString)
 	}
 }
 
@@ -95,4 +93,21 @@ func check(e error) {
 		utils.Print_Error(e.Error())
 		panic(e)
 	}
+}
+
+func parsePost(input string) string {
+	var sb strings.Builder
+
+	lex := lexer.New(input)
+	li := lex.GetLine()	
+
+	for li.Type != line.EOF  {
+		p := parser.New(li)
+		parsedLine := p.ParseLine()
+		parsedLine += string('\n')
+		sb.WriteString(parsedLine)
+		li = lex.GetLine()
+	}
+
+	return sb.String()
 }

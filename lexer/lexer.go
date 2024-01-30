@@ -22,6 +22,10 @@ func New(input string) *Lexer {
 }
 
 func (l *Lexer) GetLine() line.Line {
+	if l.currentPos == len(l.input) {
+		return line.Line{ Type: line.EOF }
+	}
+
 	switch l.currentChar {
 	case '#':
 		li, err := l.getTitleLine()
@@ -40,6 +44,12 @@ func (l *Lexer) GetLine() line.Line {
 		}
 
 		return li
+	case 10:
+		l.readChar()
+		return line.Line{ Type: line.BREAK }
+	case 13:
+		l.readChar()
+		return line.Line{ Type: line.BREAK }
 	default:
 		return l.getTextLine()
 	}
@@ -103,17 +113,17 @@ func (l *Lexer) getImageLine() (line.Line, error) {
 func (l *Lexer) getLineTokens() []token.Token {
 	var tokens []token.Token
 
-	currentToken := l.GetToken()
+	currentToken := l.getToken()
 
 	for currentToken.Type != token.EOF && currentToken.Type != token.EOL {
 		tokens = append(tokens, currentToken)
-		currentToken = l.GetToken()
+		currentToken = l.getToken()
 	}
 	
 	return tokens
 }
 
-func (l *Lexer) GetToken() token.Token {
+func (l *Lexer) getToken() token.Token {
 	var tok token.Token
 	switch l.currentChar {
 		case 0:

@@ -1,6 +1,7 @@
 package lexer
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/jeremitraverse/golb/line"
@@ -11,7 +12,8 @@ func TestTitles(t *testing.T) {
 	input := `# First Title
 ## Second Title
 ### Third Title
-#### Fourth Title`
+#### Fourth Title
+`
 	
 	testCases := []struct {
 		expectedLineType line.LineType
@@ -37,13 +39,16 @@ func TestTitles(t *testing.T) {
 				{ Type: token.TEXT, Literal: "Fourth Title" },
 	 		},
 		},
+		{
+			line.EOF, []token.Token{},
+		},
 	}
 
 	l := New(input)
 
 	for i, tc := range testCases {
 		line := l.GetLine()
-
+		fmt.Println(line)
 		if line.Type != tc.expectedLineType {
 			t.Fatalf("Test Case #%d - line type is wrong. expected %q, got %q",
 				i+1, tc.expectedLineType, line.Type)

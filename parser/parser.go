@@ -37,6 +37,8 @@ func (p *Parser) ParseLine() string {
 			return createHtmlNode("div", lit)
 		case line.IMAGE:
 			return p.parseImageLine()	
+		case line.BREAK:
+			return "<br/>"
 	}
 
 	return ""
@@ -84,4 +86,3 @@ func createHtmlNode(nodeType string, nodeLiteral string) string {
 
 	return sb.String()
 }
-

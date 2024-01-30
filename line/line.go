@@ -18,4 +18,8 @@ const (
 	TEXT = "TEXT"
 
 	IMAGE = "IMAGE"
+
+	BREAK = "BREAK"
+
+	EOF = "EOF"
 )
