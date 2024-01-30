@@ -29,16 +29,21 @@ to your new post
 
 ### Basic blog post elements
 golb supports most of the Mardown elements.
+
+**Titles**
 ```
 # First Title
 ## Second Title
 ### Third Title
 #### Fourth Title
+```
 
-<image file name> Images
-
-[Link text](Link Url)
-
+**Images**
+```
+<image file name>
+```
+**Text**
+```
 Regular Text
 
 **Bold**
