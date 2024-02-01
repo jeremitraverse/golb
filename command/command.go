@@ -13,11 +13,6 @@ import (
 )
 
 func Run(args []string) {
-	if len(args) > 2 {
-		utils.Print_Error("too many arguments.")
-		return
-	}
-
 	if len(args) == 1 {
 		utils.Print_Error("missing operand.")
 		return
@@ -30,68 +25,59 @@ func Run(args []string) {
 		fmt.Println("Full documentation <https://www.github.com/jeremitraverse/golb>")
 	case "--build":
 		build()
+	case "--init":
+		if len(args) == 2 {
+			utils.Print_Error("missing blog name.")
+			return
+		}
+		initBlog(args[2])
 	default:
 		utils.Print_Error("command not recognized.")
 	}
 }
 
-func build() {
-	working_dir, err := os.Getwd()
-	if err != nil {
-		utils.Print_Error("error getting working dir.")
-		return
-	}
+func initBlog(blogName string) {
+	workingDir, err := os.Getwd()
+	blogPath := path.Join(workingDir, blogName)
 
-	generated_dir_path := path.Join(working_dir, ".generated")
-	_, err = os.Stat(generated_dir_path)
+	utils.CreateDir(blogPath)
+	utils.Check(err)
 
-	if err != nil {
-		err = os.Mkdir(generated_dir_path, 0777)
-		if err != nil {
-			utils.Print_Error(err.Error())
-			return
-		}
-	} else {
-		os.RemoveAll(generated_dir_path)
-	}
+	publicDirPath := path.Join(blogPath, "public")
+	utils.CreateDir(publicDirPath)
+	
+	utils.CreateConfigFile(path.Join(publicDirPath, "config.json"))
 
-	posts_dir_path := path.Join(working_dir, "posts")
-	_, err = os.Stat(posts_dir_path)
+	distDirPath := path.Join(publicDirPath, "dist")
+	utils.CreateDir(distDirPath)
 
-	if err != nil {
-		err = os.Mkdir(posts_dir_path, 0777)
-		if err != nil {
-			utils.Print_Error(err.Error())
-			return
-		}
-	}
+	imageDirPath := path.Join(blogPath, "images")
+	utils.CreateDir(imageDirPath)
 
-	image_dir_path := path.Join(working_dir, "images")
-	_, err = os.Stat(image_dir_path)
-
-	if err != nil {
-		err = os.Mkdir(image_dir_path, 0777)
-		if err != nil {
-			utils.Print_Error(err.Error())
-			return
-		}
-	}
-
-	files, err := os.ReadDir(posts_dir_path)
-	check(err)
-	for _, file := range files {
-		post_path := path.Join(posts_dir_path, file.Name())
-		data, err := os.ReadFile(post_path)
-		check(err)
-		htmlString := parsePost(string(data))
-		fmt.Println(htmlString)
-	}
+	postsDirPath := path.Join(blogPath, "posts")
+	utils.CreateDir(postsDirPath)
 }
 
-func check(e error) {
-	if e != nil {
-		utils.Print_Error(e.Error())
-		panic(e)
+func build() {
+	workingDir, err := os.Getwd()
+	utils.Check(err)
+
+	distDirPath := path.Join(workingDir, "public", "dist")
+	postsDirPath := path.Join(workingDir, "posts")
+
+	posts, err := os.ReadDir(postsDirPath)
+	utils.Check(err)
+
+	for _, post := range posts {
+		postPath := path.Join(postsDirPath, post.Name())
+
+		data, err := os.ReadFile(postPath)
+		utils.Check(err)
+
+		preProcessMarkdownPosts(data)
+
+		htmlString := parsePost(string(data))
+		utils.GeneratePost(path.Join(distDirPath, post.Name()), htmlString)
 	}
 }
 
@@ -103,11 +89,22 @@ func parsePost(input string) string {
 
 	for li.Type != line.EOF  {
 		p := parser.New(li)
+
 		parsedLine := p.ParseLine()
 		parsedLine += string('\n')
+
 		sb.WriteString(parsedLine)
 		li = lex.GetLine()
 	}
 
 	return sb.String()
+}
+
+// Making sure that the last line of the post is an empty line
+func preProcessMarkdownPosts(content []byte) []byte {
+	if content[len(content)-1] != 10 {
+		content = append(content, 10)
+	}
+
+	return content
 }

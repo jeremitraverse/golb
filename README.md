@@ -4,11 +4,10 @@ Golb is a simple static site generator for simple blog. It aims to reduce the
 overwhelming complexity of existing blog generators. 
 
 ### Basic usage
-Create a folder anywhere named after your blog and inside that folder, create
-another folder named posts that will contain all of your blog posts.
+Init your new blog by using the init command following your new blog name
 ```
-mkdir -p ~/my_blog/posts
-``` 
+golb --init my_blog
+```
 
 All blog post must be Markdown files. Naviguate to the posts directory and
 create a new blog post:
@@ -19,7 +18,7 @@ touch first_post.md
 
 Once you finished to write your new post, simply run the following command:
 ```
-golb ~/my_blog
+golb --build
 ```
 
 The above command will interpret the all the Markdown files in your posts

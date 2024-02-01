@@ -22,6 +22,7 @@ func New(input string) *Lexer {
 }
 
 func (l *Lexer) GetLine() line.Line {
+
 	if l.currentPos == len(l.input) {
 		return line.Line{ Type: line.EOF }
 	}
