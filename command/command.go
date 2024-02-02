@@ -6,6 +6,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/jeremitraverse/golb/config"
 	"github.com/jeremitraverse/golb/lexer"
 	"github.com/jeremitraverse/golb/line"
 	"github.com/jeremitraverse/golb/parser"
@@ -24,6 +25,7 @@ func Run(args []string) {
 		fmt.Println()
 		fmt.Println("Full documentation <https://www.github.com/jeremitraverse/golb>")
 	case "--build":
+		config.GetPosts()
 		build()
 	case "--init":
 		if len(args) == 2 {
@@ -38,15 +40,15 @@ func Run(args []string) {
 
 func initBlog(blogName string) {
 	workingDir, err := os.Getwd()
-	blogPath := path.Join(workingDir, blogName)
-
-	utils.CreateDir(blogPath)
 	utils.Check(err)
+
+	blogPath := path.Join(workingDir, blogName)
+	utils.CreateDir(blogPath)
+
+	config.CreateConfigFile(path.Join(blogPath, "config.json"))
 
 	publicDirPath := path.Join(blogPath, "public")
 	utils.CreateDir(publicDirPath)
-	
-	utils.CreateConfigFile(path.Join(publicDirPath, "config.json"))
 
 	distDirPath := path.Join(publicDirPath, "dist")
 	utils.CreateDir(distDirPath)
@@ -59,6 +61,9 @@ func initBlog(blogName string) {
 }
 
 func build() {
+	var parsedPostUrls []string
+	var parsedPostTitles []string
+
 	workingDir, err := os.Getwd()
 	utils.Check(err)
 
@@ -67,7 +72,7 @@ func build() {
 
 	posts, err := os.ReadDir(postsDirPath)
 	utils.Check(err)
-
+	
 	for _, post := range posts {
 		postPath := path.Join(postsDirPath, post.Name())
 
@@ -76,28 +81,43 @@ func build() {
 
 		preProcessMarkdownPosts(data)
 
-		htmlString := parsePost(string(data))
-		utils.GeneratePost(path.Join(distDirPath, post.Name()), htmlString)
+		parsedPost, postTitle := parsePost(string(data))
+		parsedPostUrl := path.Join(distDirPath, post.Name())
+
+		utils.GeneratePost(parsedPostUrl, parsedPost)
+
+		parsedPostUrls = append(parsedPostUrls, postPath)
+		parsedPostTitles = append(parsedPostTitles, postTitle)
+	}
+	fmt.Println(parsedPostTitles, parsedPostUrls)
+	if len(parsedPostUrls) > 0 {
+		config.WritePosts(&parsedPostUrls, &parsedPostTitles)
 	}
 }
 
-func parsePost(input string) string {
+func parsePost(input string) (string, string) {
 	var sb strings.Builder
+	var postTitle string
 
 	lex := lexer.New(input)
 	li := lex.GetLine()	
 
 	for li.Type != line.EOF  {
 		p := parser.New(li)
-
+		
 		parsedLine := p.ParseLine()
+
+		if postTitle == "" && li.Type == line.FIRST_TITLE {
+			postTitle = parsedLine[4:len(parsedLine)-5] 
+		}
+
 		parsedLine += string('\n')
 
 		sb.WriteString(parsedLine)
 		li = lex.GetLine()
 	}
 
-	return sb.String()
+	return sb.String(), postTitle
 }
 
 // Making sure that the last line of the post is an empty line

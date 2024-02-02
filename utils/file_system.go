@@ -1,16 +1,9 @@
 package utils
 
 import (
-	"encoding/json"
 	"os"
 	"path/filepath"
 )
-
-type BlogConfig struct {
-	BlogAuthor string
-	BlogDescription string
-	BlogTitle string
-}
 
 func CreateDir(dirPath string) {
 	_, err := os.Stat(dirPath) // os.Stat returns an error if the dir exists
@@ -39,16 +32,5 @@ func GeneratePost(generatedPostPath, content string) {
 	_, fileWriteError := f.WriteString(content)
 	Check(fileWriteError)
 
-	f.Close()
-}
-
-func CreateConfigFile(path string) {
-	f, err := os.Create(path)
-	Check(err)
-
-	marshaledConfig, marshErr := json.MarshalIndent(BlogConfig{}, "", "")
-	Check(marshErr)
-
-	f.Write(marshaledConfig)
 	f.Close()
 }
