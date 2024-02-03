@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 	"strings"
+	"net/http"
 
 	"github.com/jeremitraverse/golb/config"
 	"github.com/jeremitraverse/golb/lexer"
@@ -33,6 +34,8 @@ func Run(args []string) {
 			return
 		}
 		initBlog(args[2])
+	case "--serve":
+		serve()	
 	default:
 		utils.Print_Error("command not recognized.")
 	}
@@ -61,7 +64,7 @@ func initBlog(blogName string) {
 }
 
 func build() {
-	var parsedPostUrls []string
+	var parsedPostsPath []string
 	var parsedPostTitles []string
 
 	workingDir, err := os.Getwd()
@@ -70,28 +73,29 @@ func build() {
 	distDirPath := path.Join(workingDir, "public", "dist")
 	postsDirPath := path.Join(workingDir, "posts")
 
-	posts, err := os.ReadDir(postsDirPath)
+	postFiles, err := os.ReadDir(postsDirPath)
 	utils.Check(err)
 	
-	for _, post := range posts {
-		postPath := path.Join(postsDirPath, post.Name())
+	for _, postFile := range postFiles {
+		postPath := path.Join(postsDirPath, postFile.Name())
 
-		data, err := os.ReadFile(postPath)
+		postContent, err := os.ReadFile(postPath)
 		utils.Check(err)
+	
+		preProcessMarkdownPosts(postContent)
 
-		preProcessMarkdownPosts(data)
+		parsedPostContent, postTitle := parsePost(string(postContent))
+		parsedPostPath := path.Join(distDirPath, postFile.Name())
 
-		parsedPost, postTitle := parsePost(string(data))
-		parsedPostUrl := path.Join(distDirPath, post.Name())
-
-		utils.GeneratePost(parsedPostUrl, parsedPost)
-
-		parsedPostUrls = append(parsedPostUrls, postPath)
+		parsedPostPath = utils.CreateParsedPost(parsedPostPath, parsedPostContent)
+		
+		parsedPostsPath = append(parsedPostsPath, parsedPostPath)
 		parsedPostTitles = append(parsedPostTitles, postTitle)
 	}
-	fmt.Println(parsedPostTitles, parsedPostUrls)
-	if len(parsedPostUrls) > 0 {
-		config.WritePosts(&parsedPostUrls, &parsedPostTitles)
+
+	if len(parsedPostsPath) > 0 {
+		config.UpdateConfigPosts(&parsedPostsPath, &parsedPostTitles)
+		utils.UpdateIndexFile(path.Join(workingDir, "public", "index.html"))
 	}
 }
 
@@ -107,6 +111,7 @@ func parsePost(input string) (string, string) {
 		
 		parsedLine := p.ParseLine()
 
+		// removing the h1 tag
 		if postTitle == "" && li.Type == line.FIRST_TITLE {
 			postTitle = parsedLine[4:len(parsedLine)-5] 
 		}
@@ -127,4 +132,10 @@ func preProcessMarkdownPosts(content []byte) []byte {
 	}
 
 	return content
+}
+
+func serve() {
+	fmt.Println("golb: serving your blog on http://localhost:3000")
+	http.Handle("/", http.FileServer(http.Dir("./public")))
+	http.ListenAndServe(":3000", nil)
 }

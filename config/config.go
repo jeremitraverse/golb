@@ -2,29 +2,32 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path"
+	"time"
 
 	"github.com/jeremitraverse/golb/utils"
 )
 
 type BlogConfig struct {
-	BlogAuthor		string
-	BlogDescription	string
-	BlogTitle		string
+	Author		string
+	Description	string
+	Title		string
 	Posts			[]Post
 }
 
 type Post struct {
-	PostTitle	string
-	PostPath	string
+	Title		string
+	Path		string
+	CreatedOn	string	
 }
 
 func CreateConfigFile(path string) {
 	f, err := os.Create(path)
 	utils.Check(err)
 
-	marshaledConfig, marshErr := json.MarshalIndent(BlogConfig{}, "", "")
+	marshaledConfig, marshErr := json.MarshalIndent(BlogConfig{}, " ", " ")
 	utils.Check(marshErr)
 
 	f.Write(marshaledConfig)
@@ -62,27 +65,44 @@ func getConfig() *BlogConfig {
 	return &config
 }
 
-func WritePosts(postsUrl, postsTitle *[]string) {
+func UpdateConfigPosts(postsUrl, postsTitle *[]string) {
 	config := getConfig()
 
 	titles := *postsTitle	
 
-	for index, url := range *postsUrl {
-		post := Post{
-			PostPath: url,
-			PostTitle: titles[index],
-		}
-		config.Posts = append(config.Posts, post)
-	}
-	
 	configFilePath := getConfigFilePath()
 
-	json, err := json.MarshalIndent(config, "", "")
+	for index, url := range *postsUrl {
+		postTitle := titles[index]
+		if !postExists(postTitle, config.Posts) {
+			post := Post{
+				Path: url,
+				Title: titles[index],
+				CreatedOn: time.Now().Format(time.UnixDate),
+			}
+
+			config.Posts = append(config.Posts, post)
+		}
+	}
+
+	json, err := json.MarshalIndent(config, " ", " ")
 	utils.Check(err)
 
-	f, fileOpenErr := os.OpenFile(configFilePath, os.O_WRONLY, 0644)
+	fmt.Println(config.Posts)
+	f, fileOpenErr := os.OpenFile(configFilePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+
 	utils.Check(fileOpenErr)
 		
 	f.Write(json)
 	f.Close()
+}
+
+func postExists(postTitle string, posts []Post) bool {
+	for _, post := range posts {
+		if post.Title == postTitle {
+			return true
+		}
+	}
+
+	return false
 }

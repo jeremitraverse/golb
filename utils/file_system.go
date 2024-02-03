@@ -14,23 +14,38 @@ func CreateDir(dirPath string) {
 	} 
 }
 
-func GeneratePost(generatedPostPath, content string) {
-	htmlExtension := ".html"
-	generatedPostPathExt := filepath.Ext(generatedPostPath)
+func CreateParsedPost(postPath, content string) string {
+	parsedPostPath := changeFileExtToHtml(postPath)
 
-	if generatedPostPathExt != "" {
-		dir, fileName := filepath.Split(generatedPostPath)
-		newPostFileName := fileName[:len(fileName) -len(generatedPostPathExt)]
-		generatedPostPath = filepath.Join(dir, newPostFileName)
-	}
-
-	generatedPostPath = generatedPostPath + htmlExtension
-
-	f, err := os.Create(generatedPostPath)
+	f, err := os.Create(parsedPostPath)
 	Check(err)
 
 	_, fileWriteError := f.WriteString(content)
 	Check(fileWriteError)
 
 	f.Close()
+
+	return parsedPostPath 
 }
+
+func UpdateIndexFile(indexPath string) {
+
+}
+
+func changeFileExtToHtml(filePath string) string {
+	var htmlFilePath string
+	htmlExtension := ".html"
+	postPathExt := filepath.Ext(filePath)
+
+	// remove post file extension
+	if postPathExt != "" {
+		dir, fileName := filepath.Split(filePath)
+		newPostFileName := fileName[:len(fileName) -len(postPathExt)]
+		htmlFilePath = filepath.Join(dir, newPostFileName)
+	}
+	
+	htmlFilePath += htmlExtension
+
+	return htmlFilePath
+}
+
