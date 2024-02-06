@@ -53,7 +53,7 @@ func GetPosts() *[]Post {
 	return &config.Posts
 }
 
-func getConfig() *BlogConfig {
+func GetConfig() *BlogConfig {
 	var config BlogConfig
 	configPath := getConfigFilePath()
 
@@ -66,7 +66,7 @@ func getConfig() *BlogConfig {
 }
 
 func UpdateConfigPosts(postsUrl, postsTitle *[]string) {
-	config := getConfig()
+	config := GetConfig()
 
 	titles := *postsTitle	
 

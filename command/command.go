@@ -52,6 +52,9 @@ func initBlog(blogName string) {
 
 	publicDirPath := path.Join(blogPath, "public")
 	utils.CreateDir(publicDirPath)
+	
+	utils.CreateIndexFile(path.Join(publicDirPath, "index.html"))
+	utils.CreateStyleFile(path.Join(publicDirPath, "styles.css"))
 
 	distDirPath := path.Join(publicDirPath, "dist")
 	utils.CreateDir(distDirPath)
@@ -95,7 +98,6 @@ func build() {
 
 	if len(parsedPostsPath) > 0 {
 		config.UpdateConfigPosts(&parsedPostsPath, &parsedPostTitles)
-		utils.UpdateIndexFile(path.Join(workingDir, "public", "index.html"))
 	}
 }
 
