@@ -55,9 +55,12 @@ func initBlog(blogName string) {
 	
 	utils.CreateIndexFile(path.Join(publicDirPath, "index.html"))
 	utils.CreateStyleFile(path.Join(publicDirPath, "styles.css"))
+	utils.CreatePostsStyleFile(path.Join(publicDirPath, "posts_styles.css"))
 
 	distDirPath := path.Join(publicDirPath, "dist")
 	utils.CreateDir(distDirPath)
+
+	utils.CreateParsedPostList(path.Join(distDirPath, "posts.html"))
 
 	imageDirPath := path.Join(blogPath, "images")
 	utils.CreateDir(imageDirPath)

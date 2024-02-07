@@ -29,3 +29,9 @@ func (cp *ConfigParser) GetHeader() string {
 
 	return sb.String()
 }
+
+/*
+func (cp *ConfigParser) GetPosts() string {
+	var sb strings.Builder
+}
+*/

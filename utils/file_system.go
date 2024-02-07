@@ -29,6 +29,43 @@ func CreateParsedPost(postPath, content string) string {
 	return parsedPostPath 
 }
 
+func CreateParsedPostList(parsedPostListPath string) {
+	var sb strings.Builder
+
+
+	f, err := os.Create(parsedPostListPath)
+	Check(err)
+
+	sb.WriteString(`<!DOCTYPE html>
+<html>
+	<head>
+		<link rel="stylesheet" href="../posts_styles.css">
+		<meta charset="utf-8">
+		<title></title>
+	</head>
+	<body>
+		<ul class="post-list">
+			<li>
+				<a class="post" href="/">
+					<div class="post-title">
+						Premier Post 
+					</div>
+					<div class="post-date">
+						26 February 2024 EST 12:00 
+					</div>
+				</a>
+			</li>
+		</ul>
+	</body>
+</html>`)
+
+	_, fileWriteError := f.WriteString(sb.String())
+	Check(fileWriteError)
+
+	f.Close()
+	
+}
+
 func CreateIndexFile(indexPath string) {
 	var sb strings.Builder
 	htmlIndexPath := changeFileExtToHtml(indexPath)
@@ -46,10 +83,28 @@ func CreateIndexFile(indexPath string) {
 	<body>
 		<div class=content>
 			yo!
-			<iframe class="post-list" src="./posts.html"></iframe>
+			<iframe class="posts" src="./dist/posts.html" width="1200"></iframe>
 		</div>
 	</body>
-</html>`)
+</html>
+<script>
+	// Overriding anchor click within the iframe
+    function handleAnchorClick(event) {
+        event.preventDefault();
+
+        var href = event.target.parentNode.href;
+        window.parent.location.href = href;
+    }
+
+    var iframe = document.getElementById('myFrame');
+    iframe.onload = function() {
+        var iframeContent = iframe.contentWindow;
+        var anchors = iframeContent.document.getElementsByTagName('a');
+        for (var i = 0; i < anchors.length; i++) {
+            anchors[i].addEventListener('click', handleAnchorClick);
+        }
+    };
+</script>`)
 	
 	_, fileWriteError := f.WriteString(sb.String())
 	Check(fileWriteError)
@@ -68,9 +123,32 @@ func CreateStyleFile(stylesheetPath string) {
 	flex-direction: column;
 }
 
-.content .post-list {
+.content .posts {
 	border: none;
 	margin-top: 2rem;
+}`)
+
+	f.WriteString(sb.String())
+}
+
+func CreatePostsStyleFile(stylesheetPath string) {
+	var sb strings.Builder
+
+	f, err := os.Create(stylesheetPath)
+	Check(err)
+	
+	sb.WriteString(`.post-list {
+	list-style: none;
+}
+
+.post-list .post {
+		text-decoration: none;
+		display: flex;
+}
+
+.post-list .post .post-title {
+		color: blue;
+		margin-left: 1rem;
 }`)
 
 	f.WriteString(sb.String())
