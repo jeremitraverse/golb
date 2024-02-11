@@ -26,8 +26,9 @@ func Run(args []string) {
 		fmt.Println()
 		fmt.Println("Full documentation <https://www.github.com/jeremitraverse/golb>")
 	case "--build":
-		config.GetPosts()
 		build()
+	case "--build-all":
+		buildAll()
 	case "--init":
 		if len(args) == 2 {
 			utils.Print_Error("missing blog name.")
@@ -68,6 +69,9 @@ func initBlog(blogName string) {
 	postsDirPath := path.Join(blogPath, "posts")
 	utils.CreateDir(postsDirPath)
 }
+func buildAll() {
+
+}
 
 func build() {
 	var parsedPostsPath []string
@@ -76,8 +80,8 @@ func build() {
 	workingDir, err := os.Getwd()
 	utils.Check(err)
 
-	distDirPath := path.Join(workingDir, "public", "dist")
 	postsDirPath := path.Join(workingDir, "posts")
+	htmlPostListPath := path.Join(workingDir, "public", "dist", "posts.html")
 
 	postFiles, err := os.ReadDir(postsDirPath)
 	utils.Check(err)
@@ -91,7 +95,7 @@ func build() {
 		preProcessMarkdownPosts(postContent)
 
 		parsedPostContent, postTitle := parsePost(string(postContent))
-		parsedPostPath := path.Join(distDirPath, postFile.Name())
+		parsedPostPath := postFile.Name()
 
 		parsedPostPath = utils.CreateParsedPost(parsedPostPath, parsedPostContent)
 		
@@ -102,6 +106,13 @@ func build() {
 	if len(parsedPostsPath) > 0 {
 		config.UpdateConfigPosts(&parsedPostsPath, &parsedPostTitles)
 	}
+
+	var htmlPostList strings.Builder
+	for _, configPost := range *config.GetPosts() {
+		htmlPostList.WriteString(utils.FormatConfigPostToHtml(configPost.Path, configPost.Title, configPost.CreatedOn))
+	}
+
+	utils.WritePostsToIndexHtml(htmlPostListPath, htmlPostList.String())
 }
 
 func parsePost(input string) (string, string) {

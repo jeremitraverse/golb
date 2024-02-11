@@ -2,7 +2,6 @@ package config
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"path"
 	"time"
@@ -88,7 +87,6 @@ func UpdateConfigPosts(postsUrl, postsTitle *[]string) {
 	json, err := json.MarshalIndent(config, " ", " ")
 	utils.Check(err)
 
-	fmt.Println(config.Posts)
 	f, fileOpenErr := os.OpenFile(configFilePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 
 	utils.Check(fileOpenErr)

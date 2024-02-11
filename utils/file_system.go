@@ -2,8 +2,8 @@ package utils
 
 import (
 	"os"
+	"path"
 	"path/filepath"
-	"strings"
 )
 
 func CreateDir(dirPath string) {
@@ -20,8 +20,8 @@ func CreateParsedPost(postPath, content string) string {
 
 	f, err := os.Create(parsedPostPath)
 	Check(err)
-
-	_, fileWriteError := f.WriteString(content)
+	header := getPostHeaderContent()
+	_, fileWriteError := f.WriteString(header + content)
 	Check(fileWriteError)
 
 	f.Close()
@@ -29,14 +29,31 @@ func CreateParsedPost(postPath, content string) string {
 	return parsedPostPath 
 }
 
-func CreateParsedPostList(parsedPostListPath string) {
-	var sb strings.Builder
+func FormatConfigPostToHtml(postPath, postTitle, postDate string) string {
+	return `<li>
+	<a class="post" href="` + postPath + `">
+		<div class="post-title">
+			` + postTitle + `
+		</div>
+		<div class="post-date">
+			`+ postDate + `
+		</div>
+	</a>
+</li>
+`
+}
 
+func CreateParsedPostList(path string) {
+	f, err := os.Create(path)
+	Check(err)
+	f.Close()
+}
 
-	f, err := os.Create(parsedPostListPath)
+func WritePostsToIndexHtml(htmlPostListPath, htmlPostList string) {
+	f, err := os.Create(htmlPostListPath)
 	Check(err)
 
-	sb.WriteString(`<!DOCTYPE html>
+	fileContent := `<!DOCTYPE html>
 <html>
 	<head>
 		<link rel="stylesheet" href="../posts_styles.css">
@@ -45,35 +62,24 @@ func CreateParsedPostList(parsedPostListPath string) {
 	</head>
 	<body>
 		<ul class="post-list">
-			<li>
-				<a class="post" href="/">
-					<div class="post-title">
-						Premier Post 
-					</div>
-					<div class="post-date">
-						26 February 2024 EST 12:00 
-					</div>
-				</a>
-			</li>
+		` + htmlPostList + `
 		</ul>
 	</body>
-</html>`)
+</html>`
 
-	_, fileWriteError := f.WriteString(sb.String())
+	_, fileWriteError := f.WriteString(fileContent)
 	Check(fileWriteError)
 
 	f.Close()
-	
 }
 
 func CreateIndexFile(indexPath string) {
-	var sb strings.Builder
 	htmlIndexPath := changeFileExtToHtml(indexPath)
 
 	f, err := os.Create(htmlIndexPath)
 	Check(err)
 
-	sb.WriteString(`<!DOCTYPE html>
+	fileContent := `<!DOCTYPE html>
 <html>
 	<head>
 		<link rel="stylesheet" href="styles.css">
@@ -104,19 +110,17 @@ func CreateIndexFile(indexPath string) {
             anchors[i].addEventListener('click', handleAnchorClick);
         }
     };
-</script>`)
+</script>`
 	
-	_, fileWriteError := f.WriteString(sb.String())
+	_, fileWriteError := f.WriteString(fileContent)
 	Check(fileWriteError)
 }
 
 func CreateStyleFile(stylesheetPath string) {
-	var sb strings.Builder
-
 	f, err := os.Create(stylesheetPath)
 	Check(err)
 	
-	sb.WriteString(`.content {
+	fileContent := `.content {
 	display: flex;
 	justify-content: center;
 	align-items: center;
@@ -126,32 +130,33 @@ func CreateStyleFile(stylesheetPath string) {
 .content .posts {
 	border: none;
 	margin-top: 2rem;
-}`)
+}`
 
-	f.WriteString(sb.String())
+	 f.WriteString(fileContent)
 }
 
 func CreatePostsStyleFile(stylesheetPath string) {
-	var sb strings.Builder
 
 	f, err := os.Create(stylesheetPath)
 	Check(err)
 	
-	sb.WriteString(`.post-list {
+	fileContent := `.post-list {
 	list-style: none;
 }
 
 .post-list .post {
 		text-decoration: none;
+		color: black;
+		margin-bottom: 1rem;
 		display: flex;
 }
 
 .post-list .post .post-title {
 		color: blue;
 		margin-left: 1rem;
-}`)
+}`
 
-	f.WriteString(sb.String())
+	f.WriteString(fileContent)
 }
 
 func changeFileExtToHtml(filePath string) string {
@@ -169,5 +174,15 @@ func changeFileExtToHtml(filePath string) string {
 	htmlFilePath += htmlExtension
 
 	return htmlFilePath
+}
+
+func getPostHeaderContent() string {
+	baseDir, err := os.Getwd()
+	Check(err)
+
+	postHeaderContent, err := os.ReadFile(path.Join(baseDir, "public", "post_header.html"))
+	Check(err)
+
+	return string(postHeaderContent)
 }
 
