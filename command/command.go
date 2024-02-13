@@ -27,8 +27,6 @@ func Run(args []string) {
 		fmt.Println("Full documentation <https://www.github.com/jeremitraverse/golb>")
 	case "--build":
 		build()
-	case "--build-all":
-		buildAll()
 	case "--init":
 		if len(args) == 2 {
 			utils.Print_Error("missing blog name.")
@@ -58,6 +56,9 @@ func initBlog(blogName string) {
 	utils.CreateStyleFile(path.Join(publicDirPath, "styles.css"))
 	utils.CreatePostsStyleFile(path.Join(publicDirPath, "posts_styles.css"))
 
+	os.Create(path.Join(publicDirPath, "post_header.html"))
+	os.Create(path.Join(publicDirPath, "post_header_styles.css"))
+
 	distDirPath := path.Join(publicDirPath, "dist")
 	utils.CreateDir(distDirPath)
 
@@ -69,9 +70,6 @@ func initBlog(blogName string) {
 	postsDirPath := path.Join(blogPath, "posts")
 	utils.CreateDir(postsDirPath)
 }
-func buildAll() {
-
-}
 
 func build() {
 	var parsedPostsPath []string
@@ -81,25 +79,25 @@ func build() {
 	utils.Check(err)
 
 	postsDirPath := path.Join(workingDir, "posts")
+	distDirPath := path.Join(workingDir, "public", "dist")
 	htmlPostListPath := path.Join(workingDir, "public", "dist", "posts.html")
 
 	postFiles, err := os.ReadDir(postsDirPath)
 	utils.Check(err)
 	
 	for _, postFile := range postFiles {
-		postPath := path.Join(postsDirPath, postFile.Name())
+		mdPostPath := path.Join(postsDirPath, postFile.Name())
 
-		postContent, err := os.ReadFile(postPath)
+		mdPostContent, err := os.ReadFile(mdPostPath)
 		utils.Check(err)
 	
-		preProcessMarkdownPosts(postContent)
+		preProcessMarkdownPosts(mdPostContent)
 
-		parsedPostContent, postTitle := parsePost(string(postContent))
-		parsedPostPath := postFile.Name()
-
-		parsedPostPath = utils.CreateParsedPost(parsedPostPath, parsedPostContent)
+		htmlPostContent, postTitle := parsePost(string(mdPostContent))
+		htmlPostPath := utils.CreateHtmlPost(path.Join(distDirPath, postFile.Name()), htmlPostContent)
+		fmt.Println(htmlPostPath)
 		
-		parsedPostsPath = append(parsedPostsPath, parsedPostPath)
+		parsedPostsPath = append(parsedPostsPath, htmlPostPath)
 		parsedPostTitles = append(parsedPostTitles, postTitle)
 	}
 

@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"os"
 	"path"
 	"path/filepath"
@@ -15,18 +16,21 @@ func CreateDir(dirPath string) {
 	} 
 }
 
-func CreateParsedPost(postPath, content string) string {
+func CreateHtmlPost(postPath, content string) string {
 	parsedPostPath := changeFileExtToHtml(postPath)
-
+	fmt.Println(postPath, parsedPostPath)
 	f, err := os.Create(parsedPostPath)
 	Check(err)
+
 	header := getPostHeaderContent()
+	
+	// appending the post header to the post content
 	_, fileWriteError := f.WriteString(header + content)
 	Check(fileWriteError)
 
 	f.Close()
 
-	return parsedPostPath 
+	return path.Base(parsedPostPath)
 }
 
 func FormatConfigPostToHtml(postPath, postTitle, postDate string) string {
