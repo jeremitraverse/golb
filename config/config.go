@@ -19,7 +19,8 @@ type BlogConfig struct {
 type Post struct {
 	Title		string
 	Path		string
-	CreatedOn	string	
+	CreatedOn	string
+	Description string
 }
 
 func CreateConfigFile(path string) {
@@ -77,7 +78,8 @@ func UpdateConfigPosts(postsUrl, postsTitle *[]string) {
 			post := Post{
 				Path: url,
 				Title: titles[index],
-				CreatedOn: time.Now().Format(time.UnixDate),
+				CreatedOn: time.Now().Format("2006-01"), // Format date to MM-YYYY
+				Description: "",
 			}
 
 			config.Posts = append(config.Posts, post)

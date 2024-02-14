@@ -19,6 +19,7 @@ func CreateDir(dirPath string) {
 func CreateHtmlPost(postPath, content string) string {
 	parsedPostPath := changeFileExtToHtml(postPath)
 	fmt.Println(postPath, parsedPostPath)
+
 	f, err := os.Create(parsedPostPath)
 	Check(err)
 
@@ -33,16 +34,19 @@ func CreateHtmlPost(postPath, content string) string {
 	return path.Base(parsedPostPath)
 }
 
-func FormatConfigPostToHtml(postPath, postTitle, postDate string) string {
+func FormatConfigPostToHtml(postPath, postTitle, postDate, postDescription string) string {
 	return `<li>
 	<a class="post" href="` + postPath + `">
 		<div class="post-title">
 			` + postTitle + `
 		</div>
-		<div class="post-date">
-			`+ postDate + `
-		</div>
 	</a>
+	<div class="post-date">
+		`+ postDate + `
+	</div>
+	<div class="description>
+		`+ postDescription + `
+	</div>
 </li>
 `
 }
@@ -60,7 +64,7 @@ func WritePostsToIndexHtml(htmlPostListPath, htmlPostList string) {
 	fileContent := `<!DOCTYPE html>
 <html>
 	<head>
-		<link rel="stylesheet" href="../posts_styles.css">
+		<link rel="stylesheet" href="../styles/posts_styles.css">
 		<meta charset="utf-8">
 		<title></title>
 	</head>
@@ -86,7 +90,7 @@ func CreateIndexFile(indexPath string) {
 	fileContent := `<!DOCTYPE html>
 <html>
 	<head>
-		<link rel="stylesheet" href="styles.css">
+		<link rel="stylesheet" href="./styles/styles.css">
 		<meta charset="utf-8">
 		<title></title>
 	</head>
@@ -148,16 +152,20 @@ func CreatePostsStyleFile(stylesheetPath string) {
 	list-style: none;
 }
 
-.post-list .post {
-		text-decoration: none;
-		color: black;
-		margin-bottom: 1rem;
-		display: flex;
+.post-list li {
+	display: flex;
+	align-items: center;
+	margin-bottom: 1rem
 }
 
-.post-list .post .post-title {
-		color: blue;
-		margin-left: 1rem;
+.post-list li .post {
+	font-size: 1.2rem;
+}
+
+.post-list li .post-date {
+	margin-left: 1rem;
+	font-size: 0.8rem;
+	color: gray;
 }`
 
 	f.WriteString(fileContent)

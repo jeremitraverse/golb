@@ -3,9 +3,9 @@ package main
 import (
 	"os"
 
-	"github.com/jeremitraverse/golb/command"
+	"github.com/jeremitraverse/golb/cli"
 )
 
 func main() {
-	command.Run(os.Args)
+	cli.Run(os.Args)
 }
