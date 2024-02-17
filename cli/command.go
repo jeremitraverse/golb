@@ -108,6 +108,7 @@ func build() {
 	}
 
 	var htmlPostList strings.Builder
+	
 	for _, configPost := range *config.GetPosts() {
 		htmlPostList.WriteString(utils.FormatConfigPostToHtml(
 			configPost.Path,

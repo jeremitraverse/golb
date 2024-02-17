@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"fmt"
 	"os"
 	"path"
 	"path/filepath"
@@ -18,7 +17,6 @@ func CreateDir(dirPath string) {
 
 func CreateHtmlPost(postPath, content string) string {
 	parsedPostPath := changeFileExtToHtml(postPath)
-	fmt.Println(postPath, parsedPostPath)
 
 	f, err := os.Create(parsedPostPath)
 	Check(err)
@@ -36,16 +34,16 @@ func CreateHtmlPost(postPath, content string) string {
 
 func FormatConfigPostToHtml(postPath, postTitle, postDate, postDescription string) string {
 	return `<li>
-	<a class="post" href="` + postPath + `">
-		<div class="post-title">
+	<div class="post-title">
+		<a class="post-link" href="` + postPath + `" target="_top">
 			` + postTitle + `
+		</a>
+		<div class="post-date">
+			`+ postDate + `
 		</div>
-	</a>
-	<div class="post-date">
-		`+ postDate + `
 	</div>
-	<div class="description>
-		`+ postDescription + `
+	<div class="post-description">
+		` + postDescription + `
 	</div>
 </li>
 `
@@ -97,7 +95,7 @@ func CreateIndexFile(indexPath string) {
 	<body>
 		<div class=content>
 			yo!
-			<iframe class="posts" src="./dist/posts.html" width="1200"></iframe>
+			<iframe class="posts" src="./dist/posts.html" width="900"></iframe>
 		</div>
 	</body>
 </html>
@@ -130,9 +128,13 @@ func CreateStyleFile(stylesheetPath string) {
 	
 	fileContent := `.content {
 	display: flex;
-	justify-content: center;
 	align-items: center;
 	flex-direction: column;
+	height: 100%;
+}
+
+html, body, iframe {
+	height: 100%;
 }
 
 .content .posts {
@@ -153,20 +155,24 @@ func CreatePostsStyleFile(stylesheetPath string) {
 }
 
 .post-list li {
-	display: flex;
-	align-items: center;
 	margin-bottom: 1rem
 }
 
-.post-list li .post {
-	font-size: 1.2rem;
+.post-list li .post-title {
+	display: flex;
+	align-items: end;
 }
 
-.post-list li .post-date {
-	margin-left: 1rem;
-	font-size: 0.8rem;
+.post-list li .post-title .post-date {
+	margin-left: 0.7rem;
+	font-size: 0.7rem;
 	color: gray;
-}`
+}
+
+.post-list li .post-description {
+	margin-left: 2rem;
+}
+`
 
 	f.WriteString(fileContent)
 }
