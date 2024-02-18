@@ -24,7 +24,21 @@ func CreateHtmlPost(postPath, content string) string {
 	header := getPostHeaderContent()
 	
 	// appending the post header to the post content
-	_, fileWriteError := f.WriteString(header + content)
+	postContent := `<!DOCTYPE html>
+<html>
+	<head>
+		<link rel="stylesheet" href="../styles/post_styles.css">
+		<meta charset="utf-8">
+	</head>
+	<body>
+		` + header + `
+		<div class="post-content">
+			` + content + `
+		</div>
+	</body>
+</html>`
+
+	_, fileWriteError := f.WriteString(postContent)
 	Check(fileWriteError)
 
 	f.Close()
@@ -34,18 +48,18 @@ func CreateHtmlPost(postPath, content string) string {
 
 func FormatConfigPostToHtml(postPath, postTitle, postDate, postDescription string) string {
 	return `<li>
-	<div class="post-title">
-		<a class="post-link" href="` + postPath + `" target="_top">
-			` + postTitle + `
-		</a>
-		<div class="post-date">
-			`+ postDate + `
-		</div>
-	</div>
-	<div class="post-description">
-		` + postDescription + `
-	</div>
-</li>
+			<div class="post-title">
+				<a class="post-link" href="` + postPath + `" target="_top">
+					` + postTitle + `
+				</a>
+				<div class="post-date">
+					`+ postDate + `
+				</div>
+			</div>
+			<div class="post-description">
+				` + postDescription + `
+			</div>
+		</li>
 `
 }
 
@@ -68,7 +82,7 @@ func WritePostsToIndexHtml(htmlPostListPath, htmlPostList string) {
 	</head>
 	<body>
 		<ul class="post-list">
-		` + htmlPostList + `
+			` + htmlPostList + `
 		</ul>
 	</body>
 </html>`
@@ -93,8 +107,10 @@ func CreateIndexFile(indexPath string) {
 		<title></title>
 	</head>
 	<body>
+		<div class="main-navbar">
+			This is the main header, replace me!
+		</div>
 		<div class=content>
-			yo!
 			<iframe class="posts" src="./dist/posts.html" width="900"></iframe>
 		</div>
 	</body>
@@ -133,6 +149,18 @@ func CreateStyleFile(stylesheetPath string) {
 	height: 100%;
 }
 
+.main-navbar {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	margin-top: 1.5rem;
+}
+
+.main-navbar a {
+	color: black;
+	text-decoration: none
+}
+
 html, body, iframe {
 	height: 100%;
 }
@@ -146,7 +174,6 @@ html, body, iframe {
 }
 
 func CreatePostsStyleFile(stylesheetPath string) {
-
 	f, err := os.Create(stylesheetPath)
 	Check(err)
 	
@@ -171,6 +198,39 @@ func CreatePostsStyleFile(stylesheetPath string) {
 
 .post-list li .post-description {
 	margin-left: 2rem;
+}
+`
+
+	f.WriteString(fileContent)
+}
+
+
+func CreatePostStyleFile(stylesheetPath string) {
+	f, err := os.Create(stylesheetPath)
+	Check(err)
+	
+	fileContent := `.post-content {
+	max-width: 900px
+}
+
+h1 {
+	text-align: center;
+}
+
+body {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
+	margin: 0px;
+}
+
+.post-header {
+	background-color: #dff;
+	width: 100%;
+	padding: 0.1em 0.1em 0.2em;
+	border-top: 1px solid black;
+	border-bottom: 1px solid #8ff;
 }
 `
 

@@ -58,6 +58,7 @@ func initBlog(blogName string) {
 	utils.CreateIndexFile(path.Join(publicDirPath, "index.html"))
 	utils.CreateStyleFile(path.Join(publicStylesDir, "styles.css"))
 	utils.CreatePostsStyleFile(path.Join(publicStylesDir, "posts_styles.css"))
+	utils.CreatePostStyleFile(path.Join(publicStylesDir, "post_styles.css"))
 
 	os.Create(path.Join(publicDirPath, "post_header.html"))
 	os.Create(path.Join(publicStylesDir, "post_header_styles.css"))
@@ -83,7 +84,7 @@ func build() {
 
 	postsDirPath := path.Join(workingDir, "posts")
 	distDirPath := path.Join(workingDir, "public", "dist")
-	htmlPostListPath := path.Join(workingDir, "public", "dist", "posts.html")
+	htmlPostListPath := path.Join(distDirPath, "posts.html")
 
 	postFiles, err := os.ReadDir(postsDirPath)
 	utils.Check(err)
