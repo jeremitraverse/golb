@@ -22,4 +22,6 @@ const (
 	BREAK = "BREAK"
 
 	EOF = "EOF"
+
+	CODE = "CODE"
 )

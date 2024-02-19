@@ -45,6 +45,14 @@ func (l *Lexer) GetLine() line.Line {
 		}
 
 		return li
+	case '`':
+		li, err := l.getCodeLine()
+
+		if err != nil {
+			return l.getTextLine()	
+		}
+
+		return li
 	case 10:
 		l.readChar()
 		return line.Line{ Type: line.BREAK }
@@ -85,7 +93,7 @@ func (l *Lexer) getTitleLine() (line.Line, error) {
 			li.Type = line.FIRST_TITLE
 		case "##":
 			li.Type = line.SECOND_TITLE
-		case "###":
+	case "###":
 			li.Type = line.THIRD_TITLE
 		case "####":
 			li.Type = line.FOURTH_TITLE
@@ -148,6 +156,26 @@ func (l *Lexer) getToken() token.Token {
 		default:
 			return l.getTextToken()	
 	}
+}
+
+func (l *Lexer) getCodeLine() (line.Line, error) {
+	var li line.Line
+	initialPost := l.currentPos
+
+	for i := 0; i == 2; i++ {
+		if i < 2 && l.peekChar() == '`' {
+			l.readChar()	
+		} else if i == 2 && l.peekChar() == '\n' {
+			l.readChar()	
+		} else {
+			l.reset(initialPost)
+			return li, errors.New("Not a code block")
+		}
+	}
+	
+	li.Type = line.CODE
+
+	return li, nil
 }
 
 func (l *Lexer) isEndOfFile() bool {

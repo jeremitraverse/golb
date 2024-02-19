@@ -1,7 +1,6 @@
 package lexer
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/jeremitraverse/golb/line"
@@ -48,7 +47,6 @@ func TestTitles(t *testing.T) {
 
 	for i, tc := range testCases {
 		line := l.GetLine()
-		fmt.Println(line)
 		if line.Type != tc.expectedLineType {
 			t.Fatalf("Test Case #%d - line type is wrong. expected %q, got %q",
 				i+1, tc.expectedLineType, line.Type)
@@ -156,8 +154,41 @@ func TestImage(t *testing.T) {
 		}
 
 		for j, tok := range line.Tokens {
-			expectedToken := tc.expectedTokens[j] 
+			expectedToken := tc.expectedTokens[j]
+			if tok.Literal != expectedToken.Literal {
+				t.Fatalf("Error at token #%d - Literal doesn't match. expected %q, got %q",
+					j+1, expectedToken.Literal, tok.Literal)
+			}
 
+			if tok.Type != expectedToken.Type {
+				t.Fatalf("Error at token #%d - Token type doesn't match. expected %q, got %q",
+					j+1, expectedToken.Type, tok.Type)
+			}
+		}
+	}
+}
+
+func TestCodeBlock(t *testing.T) {
+	input := "```\ni := 123\n```"
+
+	testCases := []struct {
+		expectedLineType line.LineType
+		expectedTokens []token.Token
+	}{
+		{ line.CODE, []token.Token { { Type: token.TEXT, Literal: "i := 123" } }},
+	}
+
+	l := New(input)
+
+	for i, tc := range testCases {
+		line := l.GetLine()
+		if line.Type != tc.expectedLineType {
+			t.Fatalf("Test Case #%d - line type is wrong. expected %q, got %q",
+				i, tc.expectedLineType, line.Type)
+		}
+
+		for j, tok := range line.Tokens {
+			expectedToken := tc.expectedTokens[j]
 			if tok.Literal != expectedToken.Literal {
 				t.Fatalf("Error at token #%d - Literal doesn't match. expected %q, got %q",
 					j+1, expectedToken.Literal, tok.Literal)

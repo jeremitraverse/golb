@@ -99,7 +99,7 @@ func UpdateConfigPosts(postsUrl, postsTitle *[]string) {
 
 func postExists(postTitle string, posts []Post) bool {
 	for _, post := range posts {
-		if post.Title == postTitle {
+		if post.Path == postTitle {
 			return true
 		}
 	}
