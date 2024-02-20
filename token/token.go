@@ -8,10 +8,12 @@ type Token struct {
 }
 
 const (
-	FIRST_TITLE  = "#"
-	SECOND_TITLE = "##"
-	THIRD_TITLE  = "###"
-	FOURTH_TITLE = "####"
+	FIRST_TITLE		= "#"
+	SECOND_TITLE	= "##"
+	THIRD_TITLE		= "###"
+	FOURTH_TITLE	= "####"
+
+	CODE = "CODE"
 
 	TEXT     = "TEXT"
 	NUM_LIST = "NUM_LIST"

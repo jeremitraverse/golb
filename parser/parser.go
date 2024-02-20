@@ -39,6 +39,8 @@ func (p *Parser) ParseLine() string {
 			return p.parseImageLine()	
 		case line.BREAK:
 			return "<br/>"
+		case line.CODE:
+			return p.parseCodeLine()
 	}
 
 	return ""
@@ -65,6 +67,10 @@ func (p *Parser) parseTextTokens() string {
 
 func (p *Parser) parseImageLine() string {
 	return "<img src=\"" + p.currentLine.Tokens[0].Literal + "\" />"
+}
+
+func (p *Parser) parseCodeLine() string {
+	return getOpeningNode("code") + p.currentLine.Tokens[0].Literal + getClosingNode("code")
 }
 
 func getOpeningNode(nodeType string) string {

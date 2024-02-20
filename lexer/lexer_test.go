@@ -175,7 +175,7 @@ func TestCodeBlock(t *testing.T) {
 		expectedLineType line.LineType
 		expectedTokens []token.Token
 	}{
-		{ line.CODE, []token.Token { { Type: token.TEXT, Literal: "i := 123" } }},
+		{ line.CODE, []token.Token { { Type: token.CODE, Literal: "\ni := 123\n" } }},
 	}
 
 	l := New(input)

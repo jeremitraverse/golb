@@ -161,21 +161,17 @@ func (l *Lexer) getToken() token.Token {
 func (l *Lexer) getCodeLine() (line.Line, error) {
 	var li line.Line
 	initialPost := l.currentPos
-
-	for i := 0; i == 2; i++ {
-		if i < 2 && l.peekChar() == '`' {
-			l.readChar()	
-		} else if i == 2 && l.peekChar() == '\n' {
-			l.readChar()	
-		} else {
-			l.reset(initialPost)
-			return li, errors.New("Not a code block")
-		}
+	if l.peekChar() == '`' && l.input[l.currentPos+1] == '`' {
+		li.Type = line.CODE
+		l.readChar()
+		l.readChar()
+		l.readChar()
+		li.Tokens = append(li.Tokens, l.getCodeToken())
+		return li, nil
 	}
 	
-	li.Type = line.CODE
-
-	return li, nil
+	l.reset(initialPost)
+	return li, errors.New("Line not a code block")
 }
 
 func (l *Lexer) isEndOfFile() bool {
@@ -245,6 +241,26 @@ func (l *Lexer) getTextToken() token.Token {
 	}
 
 	return token.Token{ Type: token.TEXT, Literal: l.input[initialPos:l.currentPos] }
+}
+
+func (l *Lexer) getCodeToken() token.Token {
+	tok := token.Token { Type: token.CODE }	
+	initialPost := l.currentPos
+
+	for !l.isEndOfFile() {
+		if l.currentChar == '`' && l.peekChar() == '`' && l.input[l.currentPos + 2] == '`' {
+			tok.Literal = l.input[initialPost:l.currentPos]	
+			// Skipping the next 3 '`'
+			l.readChar()
+			l.readChar()
+			l.readChar()
+			return tok
+		}
+
+		l.readChar()
+	}
+	tok.Literal = l.input[initialPost:l.currentPos]	
+	return tok
 }
 
 func (l *Lexer) getImageToken() (token.Token, error) {

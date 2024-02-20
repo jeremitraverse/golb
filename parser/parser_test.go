@@ -79,5 +79,19 @@ func TestImageParsing(t *testing.T) {
 			t.Fatalf("Error at node #%d, expected %s got %s", i, expectedNode, parsedLine)
 		}
 	}	
+}
 
+func TestCodeParsing(t *testing.T) {
+	input := "```var test := 10```"
+
+	expectedString := "<code>\nvar test:= 10\n</code>"
+	lex := lexer.New(input)
+	li := lex.GetLine()	
+	p := New(li)
+		
+	parsedLine := p.ParseLine()
+
+	if parsedLine != expectedString {
+		t.Fatalf("Error at first node, expected %s got %s", expectedString, parsedLine)
+	}
 }
