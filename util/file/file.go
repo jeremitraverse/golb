@@ -1,4 +1,4 @@
-package util
+package file
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ func CreateDir(dirPath string) {
 
 	if err != nil {
 		dirErr := os.Mkdir(dirPath, 0777)
-		Check(dirErr)
+		util.Check(dirErr)
 	}
 }
 
