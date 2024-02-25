@@ -6,7 +6,7 @@ import (
 	"path"
 	"time"
 
-	utils "github.com/jeremitraverse/golb/util"
+	 "github.com/jeremitraverse/golb/util/error"
 )
 
 type BlogConfig struct {
@@ -25,10 +25,10 @@ type Post struct {
 
 func CreateConfigFile(path string) {
 	f, err := os.Create(path)
-	utils.Check(err)
+	error.Check(err)
 
 	marshaledConfig, marshErr := json.MarshalIndent(BlogConfig{}, " ", " ")
-	utils.Check(marshErr)
+	error.Check(marshErr)
 
 	f.Write(marshaledConfig)
 	f.Close()
@@ -36,7 +36,7 @@ func CreateConfigFile(path string) {
 
 func getConfigFilePath() string {
 	workingDir, err := os.Getwd()
-	utils.Check(err)
+	error.Check(err)
 
 	return path.Join(workingDir, "config.json")
 }
@@ -46,7 +46,7 @@ func GetPosts() *[]Post {
 	configPath := getConfigFilePath()
 
 	f, err := os.ReadFile(configPath)
-	utils.Check(err)
+	error.Check(err)
 
 	err = json.Unmarshal(f, &config)
 
@@ -58,7 +58,7 @@ func GetConfig() *BlogConfig {
 	configPath := getConfigFilePath()
 
 	f, err := os.ReadFile(configPath)
-	utils.Check(err)
+	error.Check(err)
 
 	err = json.Unmarshal(f, &config)
 
@@ -87,11 +87,11 @@ func UpdateConfigPosts(postsUrl, postsTitle *[]string) {
 	}
 
 	json, err := json.MarshalIndent(config, " ", " ")
-	utils.Check(err)
+	error.Check(err)
 
 	f, fileOpenErr := os.OpenFile(configFilePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 
-	utils.Check(fileOpenErr)
+	error.Check(fileOpenErr)
 
 	f.Write(json)
 	f.Close()

@@ -11,12 +11,13 @@ import (
 	"github.com/jeremitraverse/golb/lexer"
 	"github.com/jeremitraverse/golb/line"
 	"github.com/jeremitraverse/golb/parser"
-	"github.com/jeremitraverse/golb/util"
+	"github.com/jeremitraverse/golb/util/error"
+	"github.com/jeremitraverse/golb/util/file"
 )
 
 func Run(args []string) {
 	if len(args) == 1 {
-		util.Print_Error("missing operand.")
+		error.Print_Error("missing operand.")
 		return
 	}
 
@@ -29,50 +30,50 @@ func Run(args []string) {
 		build()
 	case "--init":
 		if len(args) == 2 {
-			util.Print_Error("missing blog name.")
+			error.Print_Error("missing blog name.")
 			return
 		}
 		initBlog(args[2])
 	case "--serve":
 		serve()	
 	default:
-		util.Print_Error("command not recognized.")
+		error.Print_Error("command not recognized.")
 	}
 }
 
 func initBlog(blogName string) {
 	workingDir, err := os.Getwd()
-	util.Check(err)
+	error.Check(err)
 
 	blogPath := path.Join(workingDir, blogName)
-	util.CreateDir(blogPath)
+	file.CreateDir(blogPath)
 
 	config.CreateConfigFile(path.Join(blogPath, "config.json"))
 
 	publicDirPath := path.Join(blogPath, "public")
-	util.CreateDir(publicDirPath)
+	file.CreateDir(publicDirPath)
 	
 	publicStylesDir := path.Join(publicDirPath, "styles")
-	util.CreateDir(publicStylesDir)
+	file.CreateDir(publicStylesDir)
 
-	util.CreateIndexFile(path.Join(publicDirPath, "index.html"))
-	util.CreateStyleFile(path.Join(publicStylesDir, "styles.css"))
-	util.CreatePostsStyleFile(path.Join(publicStylesDir, "posts_styles.css"))
-	util.CreatePostStyleFile(path.Join(publicStylesDir, "post_styles.css"))
+	file.CreateIndexFile(path.Join(publicDirPath, "index.html"))
+	file.CreateStyleFile(path.Join(publicStylesDir, "styles.css"))
+	file.CreatePostsStyleFile(path.Join(publicStylesDir, "posts_styles.css"))
+	file.CreatePostStyleFile(path.Join(publicStylesDir, "post_styles.css"))
 
 	os.Create(path.Join(publicDirPath, "post_header.html"))
 	os.Create(path.Join(publicStylesDir, "post_header_styles.css"))
 
 	distDirPath := path.Join(publicDirPath, "dist")
-	util.CreateDir(distDirPath)
+	file.CreateDir(distDirPath)
 
-	util.CreateParsedPostList(path.Join(distDirPath, "posts.html"))
+	file.CreateParsedPostList(path.Join(distDirPath, "posts.html"))
 
 	imageDirPath := path.Join(blogPath, "images")
-	util.CreateDir(imageDirPath)
+	file.CreateDir(imageDirPath)
 
 	postsDirPath := path.Join(blogPath, "posts")
-	util.CreateDir(postsDirPath)
+	file.CreateDir(postsDirPath)
 }
 
 func build() {
@@ -80,25 +81,25 @@ func build() {
 	var parsedPostTitles []string
 
 	workingDir, err := os.Getwd()
-	util.Check(err)
+	error.Check(err)
 
 	postsDirPath := path.Join(workingDir, "posts")
 	distDirPath := path.Join(workingDir, "public", "dist")
 	htmlPostListPath := path.Join(distDirPath, "posts.html")
 
 	postFiles, err := os.ReadDir(postsDirPath)
-	util.Check(err)
+	error.Check(err)
 	
 	for _, postFile := range postFiles {
 		mdPostPath := path.Join(postsDirPath, postFile.Name())
 
 		mdPostContent, err := os.ReadFile(mdPostPath)
-		util.Check(err)
+		error.Check(err)
 	
 		preProcessMarkdownPosts(mdPostContent)
 
 		htmlPostContent, postTitle := parsePost(string(mdPostContent))
-		htmlPostPath := util.CreateHtmlPost(path.Join(distDirPath, postFile.Name()), htmlPostContent)
+		htmlPostPath := file.CreateHtmlPost(path.Join(distDirPath, postFile.Name()), htmlPostContent)
 		
 		parsedPostsPath = append(parsedPostsPath, htmlPostPath)
 		parsedPostTitles = append(parsedPostTitles, postTitle)
@@ -111,7 +112,7 @@ func build() {
 	var htmlPostList strings.Builder
 	
 	for _, configPost := range *config.GetPosts() {
-		htmlPostList.WriteString(util.FormatConfigPostToHtml(
+		htmlPostList.WriteString(file.FormatConfigPostToHtml(
 			configPost.Path,
 			configPost.Title,
 			configPost.CreatedOn,
@@ -119,7 +120,7 @@ func build() {
 		)
 	}
 
-	util.WritePostsToIndexHtml(htmlPostListPath, htmlPostList.String())
+	file.WritePostsToIndexHtml(htmlPostListPath, htmlPostList.String())
 }
 
 func parsePost(input string) (string, string) {

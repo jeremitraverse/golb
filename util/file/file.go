@@ -1,6 +1,7 @@
 package file
 
 import (
+	"github.com/jeremitraverse/golb/util/error"
 	"fmt"
 	"os"
 	"path"
@@ -12,7 +13,7 @@ func CreateDir(dirPath string) {
 
 	if err != nil {
 		dirErr := os.Mkdir(dirPath, 0777)
-		util.Check(dirErr)
+		error.Check(dirErr)
 	}
 }
 
@@ -20,7 +21,7 @@ func CreateHtmlPost(postPath, content string) string {
 	parsedPostPath := changeFileExtToHtml(postPath)
 
 	f, err := os.Create(parsedPostPath)
-	Check(err)
+	error.Check(err)
 
 	header := getPostHeaderContent()
 	// tabedContent := addTabToLine([]byte(content))
@@ -40,7 +41,7 @@ func CreateHtmlPost(postPath, content string) string {
 </html>`
 
 	_, fileWriteError := f.WriteString(postContent)
-	Check(fileWriteError)
+	error.Check(fileWriteError)
 
 	f.Close()
 
@@ -66,13 +67,13 @@ func FormatConfigPostToHtml(postPath, postTitle, postDate, postDescription strin
 
 func CreateParsedPostList(path string) {
 	f, err := os.Create(path)
-	Check(err)
+	error.Check(err)
 	f.Close()
 }
 
 func WritePostsToIndexHtml(htmlPostListPath, htmlPostList string) {
 	f, err := os.Create(htmlPostListPath)
-	Check(err)
+	error.Check(err)
 
 	fileContent := `<!DOCTYPE html>
 <html>
@@ -89,7 +90,7 @@ func WritePostsToIndexHtml(htmlPostListPath, htmlPostList string) {
 </html>`
 
 	_, fileWriteError := f.WriteString(fileContent)
-	Check(fileWriteError)
+	error.Check(fileWriteError)
 
 	f.Close()
 }
@@ -98,7 +99,7 @@ func CreateIndexFile(indexPath string) {
 	htmlIndexPath := changeFileExtToHtml(indexPath)
 
 	f, err := os.Create(htmlIndexPath)
-	Check(err)
+	error.Check(err)
 
 	fileContent := `<!DOCTYPE html>
 <html>
@@ -136,12 +137,12 @@ func CreateIndexFile(indexPath string) {
 </script>`
 
 	_, fileWriteError := f.WriteString(fileContent)
-	Check(fileWriteError)
+	error.Check(fileWriteError)
 }
 
 func CreateStyleFile(stylesheetPath string) {
 	f, err := os.Create(stylesheetPath)
-	Check(err)
+	error.Check(err)
 
 	fileContent := `.content {
 	display: flex;
@@ -176,7 +177,7 @@ html, body, iframe {
 
 func CreatePostsStyleFile(stylesheetPath string) {
 	f, err := os.Create(stylesheetPath)
-	Check(err)
+	error.Check(err)
 
 	fileContent := `.post-list {
 	list-style: none;
@@ -207,7 +208,7 @@ func CreatePostsStyleFile(stylesheetPath string) {
 
 func CreatePostStyleFile(stylesheetPath string) {
 	f, err := os.Create(stylesheetPath)
-	Check(err)
+	error.Check(err)
 
 	fileContent := `.post-content {
 	max-width: 900px
@@ -256,10 +257,10 @@ func changeFileExtToHtml(filePath string) string {
 
 func getPostHeaderContent() string {
 	baseDir, err := os.Getwd()
-	Check(err)
+	error.Check(err)
 
 	postHeaderContent, err := os.ReadFile(path.Join(baseDir, "public", "post_header.html"))
-	Check(err)
+	error.Check(err)
 
 	return string(addTabToLine(postHeaderContent))
 }
