@@ -7,11 +7,11 @@ import (
 	"strings"
 	"net/http"
 
-	"github.com/jeremitraverse/golb/config"
+	"github.com/jeremitraverse/golb/util/config"
 	"github.com/jeremitraverse/golb/lexer"
 	"github.com/jeremitraverse/golb/line"
 	"github.com/jeremitraverse/golb/parser"
-	"github.com/jeremitraverse/golb/utils"
+	"github.com/jeremitraverse/golb/util"
 )
 
 func Run(args []string) {

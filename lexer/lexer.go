@@ -290,10 +290,6 @@ func (l *Lexer) reset(position int) {
 	l.nextPos = position + 1
 }
 
-func isCharText(char byte) bool {
-	return char != '*' && char != '_' && !isReturnLine(char) && char != 0
-}
-
 func (l *Lexer) readChar() {
 	if l.nextPos >= len(l.input) {
 		l.currentChar = 0
@@ -311,6 +307,10 @@ func (l *Lexer) peekChar() byte {
 	}
 
 	return l.input[l.nextPos]
+}
+
+func isCharText(char byte) bool {
+	return char != '*' && char != '_' && !isReturnLine(char) && char != 0
 }
 
 // Not an extension of lexer since we want to be able to check the peek char

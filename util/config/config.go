@@ -6,20 +6,20 @@ import (
 	"path"
 	"time"
 
-	"github.com/jeremitraverse/golb/utils"
+	utils "github.com/jeremitraverse/golb/util"
 )
 
 type BlogConfig struct {
-	Author		string
-	Description	string
-	Title		string
-	Posts			[]Post
+	Author      string
+	Description string
+	Title       string
+	Posts       []Post
 }
 
 type Post struct {
-	Title		string
-	Path		string
-	CreatedOn	string
+	Title       string
+	Path        string
+	CreatedOn   string
 	Description string
 }
 
@@ -68,7 +68,7 @@ func GetConfig() *BlogConfig {
 func UpdateConfigPosts(postsUrl, postsTitle *[]string) {
 	config := GetConfig()
 
-	titles := *postsTitle	
+	titles := *postsTitle
 
 	configFilePath := getConfigFilePath()
 
@@ -76,9 +76,9 @@ func UpdateConfigPosts(postsUrl, postsTitle *[]string) {
 		postTitle := titles[index]
 		if !postExists(postTitle, config.Posts) {
 			post := Post{
-				Path: url,
-				Title: titles[index],
-				CreatedOn: time.Now().Format("2006-01"), // Format date to MM-YYYY
+				Path:        url,
+				Title:       titles[index],
+				CreatedOn:   time.Now().Format("2006-01"), // Format date to MM-YYYY
 				Description: "",
 			}
 
@@ -92,7 +92,7 @@ func UpdateConfigPosts(postsUrl, postsTitle *[]string) {
 	f, fileOpenErr := os.OpenFile(configFilePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 
 	utils.Check(fileOpenErr)
-		
+
 	f.Write(json)
 	f.Close()
 }

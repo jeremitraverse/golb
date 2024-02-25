@@ -1,6 +1,7 @@
-package utils
+package util
 
 import (
+	"fmt"
 	"os"
 	"path"
 	"path/filepath"
@@ -8,11 +9,11 @@ import (
 
 func CreateDir(dirPath string) {
 	_, err := os.Stat(dirPath) // os.Stat returns an error if the dir exists
-	
+
 	if err != nil {
 		dirErr := os.Mkdir(dirPath, 0777)
 		Check(dirErr)
-	} 
+	}
 }
 
 func CreateHtmlPost(postPath, content string) string {
@@ -22,7 +23,7 @@ func CreateHtmlPost(postPath, content string) string {
 	Check(err)
 
 	header := getPostHeaderContent()
-	
+	// tabedContent := addTabToLine([]byte(content))
 	// appending the post header to the post content
 	postContent := `<!DOCTYPE html>
 <html>
@@ -31,9 +32,9 @@ func CreateHtmlPost(postPath, content string) string {
 		<meta charset="utf-8">
 	</head>
 	<body>
-		` + header + `
+` + header + `
 		<div class="post-content">
-			` + content + `
+` + content + `
 		</div>
 	</body>
 </html>`
@@ -53,7 +54,7 @@ func FormatConfigPostToHtml(postPath, postTitle, postDate, postDescription strin
 					` + postTitle + `
 				</a>
 				<div class="post-date">
-					`+ postDate + `
+					` + postDate + `
 				</div>
 			</div>
 			<div class="post-description">
@@ -133,7 +134,7 @@ func CreateIndexFile(indexPath string) {
         }
     };
 </script>`
-	
+
 	_, fileWriteError := f.WriteString(fileContent)
 	Check(fileWriteError)
 }
@@ -141,7 +142,7 @@ func CreateIndexFile(indexPath string) {
 func CreateStyleFile(stylesheetPath string) {
 	f, err := os.Create(stylesheetPath)
 	Check(err)
-	
+
 	fileContent := `.content {
 	display: flex;
 	align-items: center;
@@ -170,13 +171,13 @@ html, body, iframe {
 	margin-top: 2rem;
 }`
 
-	 f.WriteString(fileContent)
+	f.WriteString(fileContent)
 }
 
 func CreatePostsStyleFile(stylesheetPath string) {
 	f, err := os.Create(stylesheetPath)
 	Check(err)
-	
+
 	fileContent := `.post-list {
 	list-style: none;
 }
@@ -204,11 +205,10 @@ func CreatePostsStyleFile(stylesheetPath string) {
 	f.WriteString(fileContent)
 }
 
-
 func CreatePostStyleFile(stylesheetPath string) {
 	f, err := os.Create(stylesheetPath)
 	Check(err)
-	
+
 	fileContent := `.post-content {
 	max-width: 900px
 }
@@ -245,10 +245,10 @@ func changeFileExtToHtml(filePath string) string {
 	// remove post file extension
 	if postPathExt != "" {
 		dir, fileName := filepath.Split(filePath)
-		newPostFileName := fileName[:len(fileName) -len(postPathExt)]
+		newPostFileName := fileName[:len(fileName)-len(postPathExt)]
 		htmlFilePath = filepath.Join(dir, newPostFileName)
 	}
-	
+
 	htmlFilePath += htmlExtension
 
 	return htmlFilePath
@@ -261,6 +261,35 @@ func getPostHeaderContent() string {
 	postHeaderContent, err := os.ReadFile(path.Join(baseDir, "public", "post_header.html"))
 	Check(err)
 
-	return string(postHeaderContent)
+	return string(addTabToLine(postHeaderContent))
 }
 
+func addTabToLine(content []byte) []byte {
+	// tabArray := []byte { '\t', '\t' }
+
+	var finalContent []byte
+	var previousReturnLinePos int
+
+	for i, char := range content {
+		if char == '\n' {
+			fmt.Println(content[previousReturnLinePos : i+1])
+			previousReturnLinePos = i + 1
+			/*
+				tempTabedArray := tabArray
+
+				a := content[previousReturnLinePos:i+1]
+
+				tempTabedArray = append(tempTabedArray, a...)
+
+				finalContent = append(finalContent, tempTabedArray...)
+
+				fmt.Println(previousReturnLinePos, i)
+
+				previousReturnLinePos = i+1
+			*/
+		}
+	}
+
+	return finalContent
+
+}
