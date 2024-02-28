@@ -23,9 +23,11 @@ func CreateHtmlPost(postPath, content string) string {
 	f, err := os.Create(parsedPostPath)
 	error.Check(err)
 
-	header := getPostHeaderContent()
-	// tabedContent := addTabToLine([]byte(content))
-	// appending the post header to the post content
+	headerContent := getPostHeaderContent()
+	headerContent = tabulateContent(headerContent, 2)
+	
+	bodyContent := tabulateContent([]byte(content), 3)
+
 	postContent := `<!DOCTYPE html>
 <html>
 	<head>
@@ -33,9 +35,9 @@ func CreateHtmlPost(postPath, content string) string {
 		<meta charset="utf-8">
 	</head>
 	<body>
-` + header + `
+` + string(headerContent) + `
 		<div class="post-content">
-` + content + `
+` + string(bodyContent) + `
 		</div>
 	</body>
 </html>`
@@ -255,42 +257,51 @@ func changeFileExtToHtml(filePath string) string {
 	return htmlFilePath
 }
 
-func getPostHeaderContent() string {
+func getPostHeaderContent() []byte {
 	baseDir, err := os.Getwd()
 	error.Check(err)
 
 	postHeaderContent, err := os.ReadFile(path.Join(baseDir, "public", "post_header.html"))
 	error.Check(err)
 
-	return string(addTabToLine(postHeaderContent))
+	return postHeaderContent
 }
 
-func addTabToLine(content []byte) []byte {
-	// tabArray := []byte { '\t', '\t' }
+func tabulateContent(content []byte, numberOfTab int) []byte {
+	var tabArray []byte 
+
+	for i := 0; i < numberOfTab; i++ {
+		tabArray = append(tabArray, '\t')
+	}
 
 	var finalContent []byte
 	var previousReturnLinePos int
 
-	for i, char := range content {
+	preProcessedContent := PreProcessFileContent(content)
+
+	for i, char := range preProcessedContent {
 		if char == '\n' {
 			fmt.Println(content[previousReturnLinePos : i+1])
+
+			line := content[previousReturnLinePos:i+1]
+
+			tempTabedArray := tabArray
+			tempTabedArray = append(tempTabedArray, line...)
+
+			finalContent = append(finalContent, tempTabedArray...)
+
 			previousReturnLinePos = i + 1
-			/*
-				tempTabedArray := tabArray
-
-				a := content[previousReturnLinePos:i+1]
-
-				tempTabedArray = append(tempTabedArray, a...)
-
-				finalContent = append(finalContent, tempTabedArray...)
-
-				fmt.Println(previousReturnLinePos, i)
-
-				previousReturnLinePos = i+1
-			*/
 		}
 	}
 
 	return finalContent
+}
 
+// Adds return line at the end of a file content 
+func PreProcessFileContent(content []byte) []byte {
+	if content[len(content)-1] != 10 {
+		content = append(content, 10)
+	}
+
+	return content
 }
