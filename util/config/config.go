@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"os"
 	"path"
+	"syscall"
 	"time"
 
-	 "github.com/jeremitraverse/golb/util/error"
+	"github.com/jeremitraverse/golb/util/error"
 )
 
 type BlogConfig struct {
@@ -21,6 +22,7 @@ type Post struct {
 	Path        string
 	CreatedOn   string
 	Description string
+	Id			uint64	
 }
 
 func CreateConfigFile(path string) {
@@ -41,6 +43,7 @@ func getConfigFilePath() string {
 	return path.Join(workingDir, "config.json")
 }
 
+// Gets the Post array from the config file
 func GetPosts() *[]Post {
 	var config BlogConfig
 	configPath := getConfigFilePath()
@@ -53,6 +56,7 @@ func GetPosts() *[]Post {
 	return &config.Posts
 }
 
+// Gets a json copy of the BlogConfig file
 func GetConfig() *BlogConfig {
 	var config BlogConfig
 	configPath := getConfigFilePath()
@@ -65,44 +69,70 @@ func GetConfig() *BlogConfig {
 	return &config
 }
 
-func UpdateConfigPosts(postsUrl, postsTitle *[]string) {
+// Updates the list of Posts in the config file. Updates only if the title of an
+// existing post has changed or a new post has been created
+func UpdateConfigPosts(htmlPostName, postsTitle *[]string) {
 	config := GetConfig()
 
-	titles := *postsTitle
+	workingDir, err := os.Getwd()
+	error.Check(err)
 
+	// Directory that contains the html posts
+	postsDirPath := path.Join(workingDir,"public", "dist")
+
+	titles := *postsTitle
 	configFilePath := getConfigFilePath()
 
-	for index, url := range *postsUrl {
-		postTitle := titles[index]
-		if !postExists(postTitle, config.Posts) {
+	for index, postName := range *htmlPostName {
+		postPath := path.Join(postsDirPath, postName)
+
+		fileInfo, _ := os.Stat(postPath)
+		fileInfoSys := fileInfo.Sys()
+		
+		// Equivalent of doing the stat <filepath> syscall
+		fileStat := fileInfoSys.(*syscall.Stat_t)
+		fileIno := fileStat.Ino
+
+		postExists, existingPostConfigIndex := postExists(fileIno, config.Posts)
+
+		if postExists {
+			existingPost := config.Posts[existingPostConfigIndex] 
+			// Check if Post title has changed
+			if existingPost.Title != (*postsTitle)[existingPostConfigIndex] {
+				config.Posts[existingPostConfigIndex].Title = (*postsTitle)[existingPostConfigIndex]
+				config.Posts[existingPostConfigIndex].CreatedOn = time.Now().Format("2006-01")
+			}
+		} else {
 			post := Post{
-				Path:        url,
+				Path:        postPath,
 				Title:       titles[index],
 				CreatedOn:   time.Now().Format("2006-01"), // Format date to MM-YYYY
 				Description: "",
+				Id: fileIno,
 			}
 
 			config.Posts = append(config.Posts, post)
-		}
+		} 
 	}
 
-	json, err := json.MarshalIndent(config, " ", " ")
+	jsonConfig, err := json.MarshalIndent(config, " ", " ")
 	error.Check(err)
-
-	f, fileOpenErr := os.OpenFile(configFilePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+	f, fileOpenErr := os.Create(configFilePath)
 
 	error.Check(fileOpenErr)
 
-	f.Write(json)
+	f.Write(jsonConfig)
 	f.Close()
 }
 
-func postExists(postTitle string, posts []Post) bool {
-	for _, post := range posts {
-		if post.Path == postTitle {
-			return true
+// Checks if a post existing by comparing it's inode value to each
+// existing post in the config file
+func postExists(postId uint64, posts []Post) (bool, int) {
+	for index, post := range posts {
+		if post.Id == postId {
+			return true, index
 		}
 	}
 
-	return false
+	return false, 0 
 }

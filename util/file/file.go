@@ -2,7 +2,6 @@ package file
 
 import (
 	"github.com/jeremitraverse/golb/util/error"
-	"fmt"
 	"os"
 	"path"
 	"path/filepath"
@@ -281,8 +280,6 @@ func tabulateContent(content []byte, numberOfTab int) []byte {
 
 	for i, char := range preProcessedContent {
 		if char == '\n' {
-			fmt.Println(content[previousReturnLinePos : i+1])
-
 			line := content[previousReturnLinePos:i+1]
 
 			tempTabedArray := tabArray
