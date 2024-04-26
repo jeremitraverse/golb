@@ -11,7 +11,7 @@ import (
 )
 
 type BlogConfig struct {
-	Posts       []Post
+	Posts []Post
 }
 
 type Post struct {
@@ -19,7 +19,7 @@ type Post struct {
 	Path        string
 	CreatedOn   string
 	Description string
-	Id			uint64	
+	Id          uint64
 }
 
 func CreateConfigFile(path string) {
@@ -49,6 +49,7 @@ func GetPosts() *[]Post {
 	error.Check(err)
 
 	err = json.Unmarshal(f, &config)
+	error.Check(err)
 
 	return &config.Posts
 }
@@ -62,6 +63,7 @@ func GetConfig() *BlogConfig {
 	error.Check(err)
 
 	err = json.Unmarshal(f, &config)
+	error.Check(err)
 
 	return &config
 }
@@ -75,7 +77,7 @@ func UpdateConfigPosts(htmlPostName, postsTitle *[]string) {
 	error.Check(err)
 
 	// Directory that contains the html posts
-	postsDirPath := path.Join(workingDir,"public", "dist")
+	postsDirPath := path.Join(workingDir, "public", "dist")
 
 	titles := *postsTitle
 	configFilePath := getConfigFilePath()
@@ -85,7 +87,7 @@ func UpdateConfigPosts(htmlPostName, postsTitle *[]string) {
 
 		fileInfo, _ := os.Stat(postPath)
 		fileInfoSys := fileInfo.Sys()
-		
+
 		// Equivalent of doing the stat <filepath> syscall
 		fileStat := fileInfoSys.(*syscall.Stat_t)
 		fileIno := fileStat.Ino
@@ -93,7 +95,7 @@ func UpdateConfigPosts(htmlPostName, postsTitle *[]string) {
 		postExists, existingPostConfigIndex := postExists(fileIno, config.Posts)
 
 		if postExists {
-			existingPost := config.Posts[existingPostConfigIndex] 
+			existingPost := config.Posts[existingPostConfigIndex]
 			// Check if Post title has changed
 			if existingPost.Title != (*postsTitle)[existingPostConfigIndex] {
 				config.Posts[existingPostConfigIndex].Title = (*postsTitle)[existingPostConfigIndex]
@@ -101,15 +103,16 @@ func UpdateConfigPosts(htmlPostName, postsTitle *[]string) {
 			}
 		} else {
 			post := Post{
-				Path:        postPath,
+				// Only need the dist since it's we're onyl serving the public folder
+				Path:        postName,
 				Title:       titles[index],
 				CreatedOn:   time.Now().Format("2006-01"), // Format date to MM-YYYY
 				Description: "",
-				Id: fileIno,
+				Id:          fileIno,
 			}
 
 			config.Posts = append(config.Posts, post)
-		} 
+		}
 	}
 
 	jsonConfig, err := json.MarshalIndent(config, " ", " ")
@@ -131,5 +134,5 @@ func postExists(postId uint64, posts []Post) (bool, int) {
 		}
 	}
 
-	return false, 0 
+	return false, 0
 }
