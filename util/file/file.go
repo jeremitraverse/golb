@@ -1,10 +1,11 @@
 package file
 
 import (
-	"github.com/jeremitraverse/golb/util/error"
 	"os"
 	"path"
 	"path/filepath"
+
+	"github.com/jeremitraverse/golb/util/error"
 )
 
 func CreateDir(dirPath string) {
@@ -23,8 +24,11 @@ func CreateHtmlPost(postPath, content string) string {
 	error.Check(err)
 
 	headerContent := getPostHeaderContent()
-	headerContent = tabulateContent(headerContent, 2)
-	
+
+	if len(headerContent) > 0 {
+		headerContent = tabulateContent(headerContent, 2)
+	}
+
 	bodyContent := tabulateContent([]byte(content), 3)
 
 	postContent := `<!DOCTYPE html>
@@ -267,7 +271,7 @@ func getPostHeaderContent() []byte {
 }
 
 func tabulateContent(content []byte, numberOfTab int) []byte {
-	var tabArray []byte 
+	var tabArray []byte
 
 	for i := 0; i < numberOfTab; i++ {
 		tabArray = append(tabArray, '\t')
@@ -280,7 +284,7 @@ func tabulateContent(content []byte, numberOfTab int) []byte {
 
 	for i, char := range preProcessedContent {
 		if char == '\n' {
-			line := content[previousReturnLinePos:i+1]
+			line := content[previousReturnLinePos : i+1]
 
 			tempTabedArray := tabArray
 			tempTabedArray = append(tempTabedArray, line...)
@@ -294,7 +298,7 @@ func tabulateContent(content []byte, numberOfTab int) []byte {
 	return finalContent
 }
 
-// Adds return line at the end of a file content 
+// Adds return line at the end of a file content
 func PreProcessFileContent(content []byte) []byte {
 	if content[len(content)-1] != 10 {
 		content = append(content, 10)
