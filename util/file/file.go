@@ -168,7 +168,7 @@ html, body, iframe {
 	height: 100%;
 }
 
-.content .posts {
+.content #posts {
 	border: none;
 	margin-top: 2rem;
 }`

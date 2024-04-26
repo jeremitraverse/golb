@@ -11,9 +11,6 @@ import (
 )
 
 type BlogConfig struct {
-	Author      string
-	Description string
-	Title       string
 	Posts       []Post
 }
 
