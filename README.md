@@ -3,6 +3,9 @@
 Golb is a simple static site generator for simple blogs. It aims to reduce the
 overwhelming complexity of existing blog generators.
 
+### Requirements
+The `go` toolchain is required in order to build the project.
+
 ### Basic usage
 Init your new blog by using the init command following your new blog name
 ```
