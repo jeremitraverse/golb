@@ -238,6 +238,11 @@ body {
 	border-top: 1px solid black;
 	border-bottom: 1px solid #8ff;
 }
+
+code {
+	display: block;
+	white-space: pre-wrap;
+}
 `
 
 	f.WriteString(fileContent)
