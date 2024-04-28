@@ -121,25 +121,7 @@ func CreateIndexFile(indexPath string) {
 			<iframe class="posts" src="./dist/posts.html" width="900"></iframe>
 		</div>
 	</body>
-</html>
-<script>
-	// Overriding anchor click within the iframe
-    function handleAnchorClick(event) {
-        event.preventDefault();
-
-        var href = event.target.parentNode.href;
-        window.parent.location.href = href;
-    }
-
-    var iframe = document.getElementById('myFrame');
-    iframe.onload = function() {
-        var iframeContent = iframe.contentWindow;
-        var anchors = iframeContent.document.getElementsByTagName('a');
-        for (var i = 0; i < anchors.length; i++) {
-            anchors[i].addEventListener('click', handleAnchorClick);
-        }
-    };
-</script>`
+</html>`
 
 	_, fileWriteError := f.WriteString(fileContent)
 	error.Check(fileWriteError)
